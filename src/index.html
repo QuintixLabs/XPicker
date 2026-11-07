@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>XPicker</title>
+    <link rel="stylesheet" href="styles/theme.css" />
+    <link rel="stylesheet" href="styles/app.css" />
+    <script src="lib/boot.js"></script>
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <!-- Sidebar: add a page by adding a nav button + a matching <section> -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="assets/logo.svg" alt="" />
+        <span class="label-text">XPicker</span>
+        <button id="sidebar-toggle" class="sidebar-toggle">
+          <i class="icon icon-panel-close"></i>
+          <i class="icon icon-panel-open"></i>
+        </button>
+      </div>
+      <nav class="nav">
+        <button data-tab="colors" title="Colors"><i class="icon icon-colors"></i><span class="label-text">Colors</span></button>
+        <button data-tab="settings" title="Settings"><i class="icon icon-settings"></i><span class="label-text">Settings</span></button>
+      </nav>
+      <div class="sidebar-foot">
+        <button id="pick" class="btn btn-accent pick" title="Pick color"><i class="icon icon-pipette"></i><span class="label-text">Pick color</span></button>
+        <span id="pick-keys" class="caps pick-keys"></span>
+      </div>
+    </aside>
+
+    <main>
+      <!-- First launch: intro → keys → done. Every step shares one layout
+           (icon, title, text, body) and the buttons/dots never move. -->
+      <section id="welcome" class="view welcome" hidden>
+        <div class="stage">
+          <div class="step" data-step="0">
+            <div class="step-icon"><img src="assets/logo.svg" alt="" /></div>
+            <h1>Welcome to XPicker</h1>
+            <p class="lead">Pick any color on your screen and copy it in the format you need.</p>
+          </div>
+
+          <div class="step" data-step="1" hidden>
+            <div class="step-icon badge"><i class="icon icon-keyboard"></i></div>
+            <h1>Set up your keys</h1>
+            <p class="lead">Click a key to change it. You can do this later in Settings too.</p>
+            <div class="step-body">
+              <div class="group">
+                <div class="row">
+                  <div>
+                    <div class="row-title">Start picking</div>
+                    <div class="row-hint">Works from any app</div>
+                  </div>
+                  <button class="recorder" data-field="shortcut"></button>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-title">Copy color</div>
+                    <div class="row-hint">Copies the color under the cursor</div>
+                  </div>
+                  <button class="recorder" data-field="pick"></button>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-title">Switch format</div>
+                    <div class="row-hint">HEX, RGB, RGBA, HSL, HSLA</div>
+                  </div>
+                  <button class="recorder" data-field="cycle"></button>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-title">Cancel</div>
+                    <div class="row-hint">Closes the picker</div>
+                  </div>
+                  <button class="recorder" data-field="cancel"></button>
+                </div>
+              </div>
+              <p class="status"></p>
+            </div>
+          </div>
+
+          <!-- Same rows, same order as the step before, just read-only. -->
+          <div class="step" data-step="2" hidden>
+            <div class="step-icon badge"><i class="icon icon-check"></i></div>
+            <h1>You're all set</h1>
+            <p class="lead">XPicker stays in your tray, ready whenever you need it.</p>
+            <div class="step-body">
+              <div class="group">
+                <div class="row">
+                  <div>
+                    <div class="row-title">Start picking</div>
+                    <div class="row-hint">Works from any app</div>
+                  </div>
+                  <span class="caps caps-box" data-shortcut></span>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-title">Copy color</div>
+                    <div class="row-hint">Copies the color under the cursor</div>
+                  </div>
+                  <span class="caps caps-box" data-caps="pick"></span>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-title">Switch format</div>
+                    <div class="row-hint">HEX, RGB, RGBA, HSL, HSLA</div>
+                  </div>
+                  <span class="caps caps-box" data-caps="cycle"></span>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="row-title">Cancel</div>
+                    <div class="row-hint">Closes the picker</div>
+                  </div>
+                  <span class="caps caps-box" data-caps="cancel"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button id="back" class="btn btn-muted">Back</button>
+          <button id="next" class="btn btn-accent">Get started</button>
+        </div>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </section>
+
+      <!-- Recent colors -->
+      <section id="colors" class="view" hidden>
+        <header class="page-head">
+          <h2>Colors</h2>
+          <button id="clear" class="btn btn-ghost"><i class="icon icon-eraser"></i>Clear all</button>
+        </header>
+        <div id="formats" class="segmented formats"></div>
+        <button id="hero" class="hero"></button>
+        <p id="earlier" class="label">Earlier</p>
+        <ol id="history" class="history"></ol>
+      </section>
+
+      <!-- Settings -->
+      <section id="settings" class="view" hidden>
+        <header class="page-head">
+          <h2>Settings</h2>
+        </header>
+
+        <h3 class="section">Shortcuts</h3>
+        <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">Start picking</div>
+              <div class="row-hint">Works from any app</div>
+            </div>
+            <button class="recorder" data-field="shortcut"></button>
+          </div>
+          <div class="row">
+            <div class="row-title">Copy color</div>
+            <button class="recorder" data-field="pick"></button>
+          </div>
+          <div class="row">
+            <div class="row-title">Switch format</div>
+            <button class="recorder" data-field="cycle"></button>
+          </div>
+          <div class="row">
+            <div class="row-title">Cancel</div>
+            <button class="recorder" data-field="cancel"></button>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Open XPicker</div>
+              <div class="row-hint">From the picker, opens this window</div>
+            </div>
+            <button class="recorder" data-field="open"></button>
+          </div>
+        </div>
+
+        <h3 class="section">Startup</h3>
+        <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">Pick on launch</div>
+              <div class="row-hint">Opening XPicker starts the picker right away</div>
+            </div>
+            <button class="toggle" role="switch" data-field="pickOnLaunch"></button>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Close to tray</div>
+              <div class="row-hint">Keeps the shortcut working. Off: quits when nothing is open.</div>
+            </div>
+            <button class="toggle" role="switch" data-field="closeToTray"></button>
+          </div>
+        </div>
+
+        <h3 class="section">General</h3>
+        <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">Copied popup</div>
+              <div class="row-hint">How long it stays on screen</div>
+            </div>
+            <div class="segmented" data-field="toastMs" data-options="0:Off,1000:1s,2000:2s,3000:3s,5000:5s"></div>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Remember</div>
+              <div class="row-hint">Recent colors to keep</div>
+            </div>
+            <div class="segmented" data-field="historySize" data-options="5:5,10:10,20:20"></div>
+          </div>
+        </div>
+
+        <h3 class="section">Updates</h3>
+        <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">XPicker</div>
+              <div id="version" class="row-hint"></div>
+            </div>
+            <button id="update" class="btn btn-muted update" data-state="idle">
+              <span class="update-content">
+                <span class="update-icon"></span>
+                <span class="update-text">Check for updates</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <p class="status footer-status" data-default="Changes save automatically."></p>
+        <div class="footer">
+          <button id="replay" class="btn btn-ghost">Show welcome screen</button>
+          <button id="reset" class="btn btn-ghost"><i class="icon icon-rotate-ccw"></i>Reset to defaults</button>
+        </div>
+
+        <footer class="app-footer">
+          <div class="about">
+            <i class="icon icon-quintix"></i>
+            <span>Quintix</span>
+          </div>
+          <div class="footer-links">
+            <button class="icon-btn" data-link="github" title="GitHub"><i class="icon icon-github"></i></button>
+            <button class="icon-btn" data-link="website" title="Website"><i class="icon icon-globe"></i></button>
+            <button class="icon-btn" data-link="kofi" title="Support on Ko-fi"><i class="icon icon-kofi"></i></button>
+          </div>
+        </footer>
+      </section>
+    </main>
+
+    <dialog id="confirm" class="dialog">
+      <form method="dialog">
+        <p id="confirm-title" class="dialog-title"></p>
+        <p id="confirm-text" class="dialog-text"></p>
+        <div class="dialog-actions">
+          <button value="cancel" class="btn btn-muted">Cancel</button>
+          <button value="ok" id="confirm-ok" class="btn btn-danger"></button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

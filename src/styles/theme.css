@@ -1,0 +1,109 @@
+/* Design tokens + shared base. Change these to restyle the whole app. */
+
+@font-face {
+  font-family: "Outfit";
+  src: url("../fonts/Outfit.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+:root {
+  --bg: #0b0b0c;
+  --surface: #131315;
+  --raised: #1b1b1e;
+  --line: #222225;
+  --line-strong: #323236;
+  --text: #f4f4f5;
+  --muted: #8f8f96;
+  --faint: #5c5c63;
+  --accent: #00bfff;
+  --danger: #e5484d;
+
+  --font: "Outfit", system-ui, sans-serif;
+  --radius: 10px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Desktop-app feel: nothing is selectable or draggable, no text cursor. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+::selection {
+  background: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  cursor: default;
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  pointer-events: none;
+}
+
+/* Focus rings only for keyboard users. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Icons from assets/icons, tinted with the text color: <i class="icon icon-colors"></i> */
+.icon {
+  display: inline-block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+
+.icon-check { --icon: url("../assets/icons/check.svg"); }
+.icon-colors { --icon: url("../assets/icons/colors.svg"); }
+.icon-eraser { --icon: url("../assets/icons/eraser.svg"); }
+.icon-github { --icon: url("../assets/icons/footer/github.svg"); }
+.icon-globe { --icon: url("../assets/icons/footer/globe.svg"); }
+.icon-kofi { --icon: url("../assets/icons/footer/ko-fi.svg"); }
+.icon-quintix { --icon: url("../assets/icons/footer/quintix.svg"); }
+.icon-rotate-ccw { --icon: url("../assets/icons/rotate-ccw.svg"); }
+.icon-keyboard { --icon: url("../assets/icons/keyboard.svg"); }
+.icon-panel-close { --icon: url("../assets/icons/panel-left-close.svg"); }
+.icon-panel-open { --icon: url("../assets/icons/panel-left-open.svg"); }
+.icon-pipette { --icon: url("../assets/icons/pipette.svg"); }
+.icon-settings { --icon: url("../assets/icons/settings.svg"); }
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--raised);
+  color: var(--text);
+  font: 500 12px/1 var(--font);
+  white-space: nowrap;
+}

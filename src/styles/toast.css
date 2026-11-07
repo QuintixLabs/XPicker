@@ -1,0 +1,95 @@
+/* Toast — Windows-notification sized card, bottom-right, after a pick.
+   The window is only slightly bigger than the card: the shadow and the slide
+   distance must fit inside the padding or they get clipped at the window edge. */
+
+body {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 20px 20px 22px;
+  background: transparent;
+}
+
+.toast {
+  width: 380px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); /* reaches 18px, inside the padding */
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(8px);
+  transition: opacity 200ms ease-out, transform 260ms var(--ease-out);
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.toast.is-leaving {
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 180ms ease-in, transform 180ms ease-in;
+}
+
+.toast-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 22px;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.toast-head img {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+/* Outfit sits a touch high in its line box; nudge it onto the icon's center. */
+.toast-head span {
+  line-height: 1;
+  transform: translateY(1px);
+}
+
+.toast-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.toast-swatch {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--color);
+}
+
+.toast-swatch.is-dark {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.toast-text {
+  min-width: 0;
+}
+
+.toast-value {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.toast-meta {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 13px;
+}

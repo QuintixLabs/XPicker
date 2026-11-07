@@ -1,0 +1,15 @@
+{
+  "name": "xpicker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lightweight screen color picker",
+  "license": "GPL-3.0",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "version": "node scripts/sync-version.mjs && git add src-tauri/Cargo.toml"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}
