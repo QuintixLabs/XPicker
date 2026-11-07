@@ -1,12 +1,12 @@
-// Tray icon — click opens XPicker; right-click shows the menu:
+// Tray icon — click opens XPicker (click again to close it); right-click shows the menu:
 //
-//   Pick color            Ctrl+Shift+X
-//   Recent colors       ▸ (last 5, each with its color; click to copy)
-//   ─────────
 //   Open XPicker
 //   Settings
 //   ─────────
-//   Quit XPicker
+//   Pick color            Ctrl+Shift+X
+//   Recent colors       ▸ (last 5, each with its color; click to copy)
+//   ─────────
+//   Exit
 //
 // The menu is rebuilt whenever settings or recent colors change (see Store::update).
 
@@ -30,7 +30,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
         .on_menu_event(|app, event| on_menu(app, event.id.as_ref()))
         .on_tray_icon_event(|tray, event| {
             if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
-                ui::open_main_async(tray.app_handle());
+                ui::toggle_main_async(tray.app_handle());
             }
         });
 
@@ -96,11 +96,11 @@ fn menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
 
     let open = MenuItem::with_id(app, "open", "Open XPicker", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit XPicker", true, None::<&str>)?;
+    let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
 
     Menu::with_items(
         app,
-        &[&pick, &recent, &PredefinedMenuItem::separator(app)?, &open, &settings, &PredefinedMenuItem::separator(app)?, &quit],
+        &[&open, &settings, &PredefinedMenuItem::separator(app)?, &pick, &recent, &PredefinedMenuItem::separator(app)?, &exit],
     )
 }
 
@@ -109,7 +109,7 @@ fn on_menu(app: &AppHandle, id: &str) {
         "pick" => picker::start(app),
         "open" => ui::open_main_async(app),
         "settings" => ui::open_page_async(app, "settings"),
-        "quit" => app.exit(0),
+        "exit" => app.exit(0),
         _ => {
             if let Some(hex) = id.strip_prefix("recent:") {
                 copy_recent(app, hex);

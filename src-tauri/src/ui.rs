@@ -46,6 +46,19 @@ pub fn open_main_async(app: &AppHandle) {
     });
 }
 
+/// Tray click: opens the window, or closes it if it's already open.
+pub fn toggle_main_async(app: &AppHandle) {
+    let app = app.clone();
+    thread::spawn(move || match app.get_webview_window(MAIN) {
+        Some(window) if window.is_visible().unwrap_or(false) && !window.is_minimized().unwrap_or(false) => {
+            let _ = window.close();
+        }
+        _ => {
+            let _ = open_main(&app);
+        }
+    });
+}
+
 /// Opens the window on a page ("settings").
 pub fn open_page_async(app: &AppHandle, page: &'static str) {
     let app = app.clone();

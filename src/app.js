@@ -196,7 +196,8 @@ $('#pick').addEventListener('click', () => invoke('start_pick'));
 // ---------- colors
 
 function renderColors() {
-  const [latest, ...rest] = state.history;
+  // All recent colors are kept; "Remember" only decides how many are shown.
+  const [latest, ...rest] = state.history.slice(0, state.settings.historySize);
 
   $('#formats').innerHTML = FORMATS.map(
     (f, i) => `<button class="${i === state.settings.format ? 'is-active' : ''}" data-format="${i}">${f.name}</button>`,

@@ -4,6 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf, sync::Mutex, time::SystemTime};
 use tauri::{AppHandle, Emitter, Manager};
 
+/// The largest "Remember" option in Settings.
+const MAX_HISTORY: usize = 20;
+
 /// Bindings are "Mouse:<button>" or "Key:<KeyboardEvent.code>".
 /// The global shortcut uses the plugin's syntax, e.g. "Ctrl+Shift+KeyX".
 #[derive(Clone, Serialize, Deserialize)]
@@ -100,8 +103,9 @@ impl Store {
         let data = {
             let mut data = self.data.lock().unwrap();
             change(&mut data);
-            let size = data.settings.history_size;
-            data.history.truncate(size);
+            // Keep the most "Remember" can ask for; the window shows only history_size.
+            // So switching 10 → 5 → 10 never loses colors.
+            data.history.truncate(MAX_HISTORY);
 
             if let Some(dir) = self.path.parent() {
                 let _ = fs::create_dir_all(dir);
