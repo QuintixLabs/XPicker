@@ -1,6 +1,6 @@
 [package]
 name = "xpicker"
-version = "1.0.2"
+version = "1.0.3"
 description = "Lightweight screen color picker"
 authors = ["Quintix"]
 license = "GPL-3.0"
