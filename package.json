@@ -5,6 +5,7 @@
   "description": "Lightweight screen color picker",
   "license": "GPL-3.0",
   "scripts": {
+    "tauri": "tauri",
     "dev": "tauri dev",
     "build": "tauri build",
     "version": "node scripts/sync-version.mjs && git add src-tauri/Cargo.toml"
