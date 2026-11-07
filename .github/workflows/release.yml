@@ -129,8 +129,15 @@ jobs:
             fi
           } >notes.md
 
-          gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$tag" --notes-file notes.md
-          id="$(gh api "repos/$GITHUB_REPOSITORY/releases" --jq ".[] | select(.tag_name == \"$tag\") | .id" | head -n 1)"
+          # Take the id from GitHub's answer; looking it up right after can miss the new draft.
+          id="$(gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
+            -f tag_name="$tag" -f target_commitish="$GITHUB_SHA" -f name="$tag" \
+            -F draft=true -F body=@notes.md --jq '.id')"
+          if [ -z "$id" ]; then
+            echo "Made the draft but didn't get its id back, so the builds would have nowhere to upload." >&2
+            exit 1
+          fi
+          echo "Made the draft $tag ($id)"
           echo "release-id=$id" >>"$GITHUB_OUTPUT"
 
   build:
@@ -180,7 +187,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           releaseId: ${{ needs.draft.outputs.release-id }}
-          # Without this, tauri-action publishes the release when it's done uploading.
+          # Stay a draft; only "Publish release" by hand makes it public.
           releaseDraft: true
           includeUpdaterJson: true
           # Signatures are already inside latest.json; no separate .sig files.
