@@ -174,8 +174,15 @@
           </div>
         </div>
 
-        <h3 class="section">Startup</h3>
+        <h3 class="section">Startup options</h3>
         <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">Start with computer</div>
+              <div class="row-hint">Starts quietly in the tray when you log in</div>
+            </div>
+            <button class="toggle" role="switch" data-field="startWithComputer"></button>
+          </div>
           <div class="row">
             <div>
               <div class="row-title">Pick on launch</div>
@@ -196,10 +203,10 @@
         <div class="group">
           <div class="row">
             <div>
-              <div class="row-title">Copied popup</div>
-              <div class="row-hint">How long it stays on screen</div>
+              <div class="row-title">Copied notification</div>
+              <div class="row-hint">A system notification after you copy a color</div>
             </div>
-            <div class="segmented" data-field="toastMs" data-options="0:Off,1000:1s,2000:2s,3000:3s,5000:5s"></div>
+            <button class="toggle" role="switch" data-field="notify"></button>
           </div>
           <div class="row">
             <div>
@@ -212,6 +219,13 @@
 
         <h3 class="section">Updates</h3>
         <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">Update automatically</div>
+              <div class="row-hint">Installs new versions when you're not using XPicker</div>
+            </div>
+            <button class="toggle" role="switch" data-field="autoUpdate"></button>
+          </div>
           <div class="row">
             <div>
               <div class="row-title">XPicker</div>

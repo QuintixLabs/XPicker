@@ -34,7 +34,7 @@
         "https://github.com/QuintixLabs/XPicker-Testing/releases/latest/download/latest.json"
       ],
       "windows": {
-        "installMode": "passive"
+        "installMode": "quiet"
       }
     }
   }

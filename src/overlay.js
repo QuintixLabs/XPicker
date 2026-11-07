@@ -261,7 +261,7 @@ function pick() {
   const { x, y } = target();
   const color = pixelAt(x, y);
   const format = FORMATS[formatIndex];
-  invoke('pick', { value: format.format(color), hex: color.hex, format: formatIndex, name: format.name });
+  invoke('pick', { value: format.format(color), hex: color.hex, format: formatIndex });
 }
 
 function cycle(repeat) {

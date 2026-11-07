@@ -1,6 +1,6 @@
-// Windows — picker overlay, copy toast and the main window.
-// Overlay and toast get a fresh label each time ("overlay-3"), so a window
-// that's still closing can never clash with its replacement.
+// Windows — the picker overlay and the main window.
+// The overlay gets a fresh label each time ("overlay-3"), so one that's still
+// closing can never clash with its replacement.
 
 use std::{
     sync::atomic::{AtomicUsize, Ordering},
@@ -10,33 +10,18 @@ use tauri::{window::Color, AppHandle, Manager, Monitor, Theme, WebviewUrl, Webvi
 
 pub const MAIN: &str = "main";
 pub const OVERLAY: &str = "overlay";
-pub const TOAST: &str = "toast";
-
-/// Toast window size in logical px (card + room for its shadow).
-const TOAST_SIZE: (f64, f64) = (420.0, 160.0);
 
 static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
 
-fn label(kind: &str) -> String {
-    format!("{kind}-{}", NEXT_ID.fetch_add(1, Ordering::Relaxed))
-}
-
-/// First open window of a kind ("overlay" / "toast").
+/// First open window of a kind ("overlay").
 pub fn find(app: &AppHandle, kind: &str) -> Option<WebviewWindow> {
     let prefix = format!("{kind}-");
     app.webview_windows().into_iter().find(|(l, _)| l.starts_with(&prefix)).map(|(_, w)| w)
 }
 
-pub fn close_toasts(app: &AppHandle) {
-    while let Some(toast) = find(app, TOAST) {
-        if toast.destroy().is_err() {
-            break;
-        }
-    }
-}
-
 pub fn create_overlay(app: &AppHandle, monitor: &Monitor) -> tauri::Result<()> {
-    let window = WebviewWindowBuilder::new(app, label(OVERLAY), WebviewUrl::App("overlay.html".into()))
+    let label = format!("{OVERLAY}-{}", NEXT_ID.fetch_add(1, Ordering::Relaxed));
+    let window = WebviewWindowBuilder::new(app, label, WebviewUrl::App("overlay.html".into()))
         .title("XPicker")
         .decorations(false)
         .resizable(false)
@@ -48,31 +33,6 @@ pub fn create_overlay(app: &AppHandle, monitor: &Monitor) -> tauri::Result<()> {
 
     window.set_position(*monitor.position())?;
     window.set_size(*monitor.size())?;
-    Ok(())
-}
-
-/// Created invisible and click-through when picking starts, so it can appear
-/// the instant a color is picked (creating a webview then would add a delay).
-pub fn create_toast(app: &AppHandle, monitor: &Monitor) -> tauri::Result<()> {
-    let area = monitor.work_area();
-    let scale = monitor.scale_factor();
-    let right = (area.position.x as f64 + area.size.width as f64) / scale;
-    let bottom = (area.position.y as f64 + area.size.height as f64) / scale;
-
-    let window = WebviewWindowBuilder::new(app, label(TOAST), WebviewUrl::App("toast.html".into()))
-        .title("XPicker")
-        .inner_size(TOAST_SIZE.0, TOAST_SIZE.1)
-        .position(right - TOAST_SIZE.0, bottom - TOAST_SIZE.1)
-        .decorations(false)
-        .transparent(true)
-        .shadow(false)
-        .resizable(false)
-        .always_on_top(true)
-        .skip_taskbar(true)
-        .focused(false)
-        .build()?;
-
-    window.set_ignore_cursor_events(true)?;
     Ok(())
 }
 

@@ -19,6 +19,7 @@ tauri-plugin-global-shortcut = "2.4.1"
 tauri-plugin-single-instance = "2.5.5"
 tauri-plugin-updater = "2.14.1"
 tauri-plugin-opener = "2.7.2"
+tauri-plugin-autostart = "2.7.0"
 
 # Small, fast release binary
 [profile.release]
@@ -27,3 +28,9 @@ lto = true
 codegen-units = 1
 panic = "abort"
 strip = true
+
+[target."cfg(windows)".dependencies]
+windows = { version = "0.62.2", features = ["Data_Xml_Dom", "UI_Notifications", "Foundation"] }
+
+[target."cfg(not(windows))".dependencies]
+notify-rust = "4.18.2"

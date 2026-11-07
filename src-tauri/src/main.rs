@@ -5,7 +5,7 @@
 // Lives in the tray (or quits when idle if "Close to tray" is off).
 // A global shortcut starts a pick; picks are copied, remembered and
 // shown in the main window alongside the settings. First launch
-// shows a welcome screen.
+// shows a welcome screen. Updates itself quietly when not in use.
 //==============================================================
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -13,19 +13,23 @@
 mod capture;
 mod clipboard;
 mod commands;
+mod notify;
 mod picker;
 mod shortcut;
+mod startup;
 mod store;
 mod tray;
 mod ui;
 mod updates;
 
-use tauri::{Manager, RunEvent};
+use std::time::Duration;
+use tauri::{AppHandle, Manager, RunEvent};
 
 fn main() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| picker::launch(app)))
         .plugin(shortcut::plugin())
+        .plugin(startup::plugin())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .manage(picker::Frame::default())
@@ -44,7 +48,7 @@ fn main() {
             if let Err(err) = shortcut::apply(handle, &shortcut) {
                 eprintln!("XPicker: couldn't register {shortcut}: {err}");
             }
-            picker::launch(handle);
+            open_on_start(handle);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -52,9 +56,7 @@ fn main() {
             commands::frame,
             commands::ready,
             commands::dismiss,
-            commands::toast_payload,
             commands::start_pick,
-            commands::open_main,
             commands::open_from_picker,
             commands::pick,
             commands::copy,
@@ -68,13 +70,30 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("failed to start XPicker");
 
-    // Last window closed: stay in the tray, or quit if "Close to tray" is off.
-    // Quit from the tray menu always quits.
     app.run(|app, event| {
-        if let RunEvent::ExitRequested { code: None, api, .. } = event {
-            if picker::keep_running(app) {
+        if let RunEvent::ExitRequested { code, api, .. } = event {
+            // Last window closed: stay in the tray, unless "Close to tray" is off.
+            // Quit from the tray menu (code is set) always quits.
+            if code.is_none() && picker::keep_running(app) {
                 api.prevent_exit();
+            } else {
+                updates::install_on_exit(app);
             }
         }
     });
+}
+
+/// What this start should show, then start the update checker.
+fn open_on_start(app: &AppHandle) {
+    let at_login = startup::launched_at_login();
+    match updates::just_updated(app).map(|notice| notice.mode) {
+        // Restarted by a quiet update: back to the tray, nothing pops up.
+        Some(mode) if mode == "background" => {}
+        Some(mode) if mode == "manual" => ui::open_main_async(app),
+        // Login start: quietly in the tray.
+        _ if at_login => {}
+        _ => picker::launch(app),
+    }
+    // A login start waits a minute so it doesn't slow down logging in.
+    updates::start_auto(app, Duration::from_secs(if at_login { 60 } else { 10 }));
 }

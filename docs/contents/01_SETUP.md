@@ -35,9 +35,10 @@ XPicker keeps running in the tray after you close its window. Quit it from the t
 |---|---|
 | `src/index.html`, `app.js` | Main window: welcome, colors, settings |
 | `src/overlay.js` | The picker (frozen screenshot + loupe) |
-| `src/toast.js` | The "Copied to clipboard" notification |
 | `src/styles/theme.css` | Colors, font and shared styles |
-| `src-tauri/src/` | Rust: capture, clipboard, shortcut, windows, updates |
+| `src-tauri/src/` | Rust: capture, clipboard, shortcut, windows, notifications, updates |
+
+Notifications are real system notifications (`src-tauri/src/notify.rs`). In a dev build on Windows they show under PowerShell's name, since Windows only knows XPicker's own name once it's installed.
 
 ## Make a build
 

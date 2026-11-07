@@ -7,7 +7,7 @@ use tauri::{ipc::Response, AppHandle, State, WebviewWindow};
 use crate::{
     clipboard::Clipboard,
     picker::{self, Frame},
-    shortcut,
+    shortcut, startup,
     store::{Data, Settings, Store},
     ui, updates,
 };
@@ -40,14 +40,8 @@ pub async fn dismiss(app: AppHandle, window: WebviewWindow) {
     let overlay = window.label().starts_with(ui::OVERLAY);
     let _ = window.destroy();
     if overlay {
-        picker::cancelled(&app);
+        picker::closed(&app);
     }
-}
-
-/// The toast fetches its color on load, in case the pick beat it.
-#[tauri::command]
-pub async fn toast_payload(frame: State<'_, Frame>) -> Result<Option<serde_json::Value>, String> {
-    Ok(frame.toast.lock().unwrap().take())
 }
 
 #[tauri::command]
@@ -56,18 +50,13 @@ pub async fn start_pick(app: AppHandle) {
 }
 
 #[tauri::command]
-pub async fn open_main(app: AppHandle) {
-    let _ = ui::open_main(&app);
-}
-
-#[tauri::command]
 pub async fn open_from_picker(app: AppHandle, window: WebviewWindow) {
     picker::open_app(&app, &window);
 }
 
 #[tauri::command]
-pub async fn pick(app: AppHandle, value: String, hex: String, format: usize, name: String) -> Result<(), String> {
-    picker::finish(&app, &value, &hex, format, &name)
+pub async fn pick(app: AppHandle, value: String, hex: String, format: usize) -> Result<(), String> {
+    picker::finish(&app, &value, &hex, format)
 }
 
 #[tauri::command]
@@ -77,12 +66,15 @@ pub async fn copy(clipboard: State<'_, Clipboard>, text: String) -> Result<(), S
 
 #[tauri::command]
 pub async fn save_settings(app: AppHandle, store: State<'_, Store>, settings: Settings) -> Result<Data, String> {
-    let previous = store.get().settings.shortcut;
-    if settings.shortcut != previous {
+    let previous = store.get().settings;
+    if settings.shortcut != previous.shortcut {
         if let Err(err) = shortcut::apply(&app, &settings.shortcut) {
-            let _ = shortcut::apply(&app, &previous);
+            let _ = shortcut::apply(&app, &previous.shortcut);
             return Err(format!("That shortcut can't be used ({err})."));
         }
+    }
+    if settings.start_with_computer != previous.start_with_computer {
+        startup::set(&app, settings.start_with_computer)?;
     }
     Ok(store.update(&app, |data| data.settings = settings))
 }

@@ -14,12 +14,15 @@ pub struct Settings {
     pub cycle: String,
     pub cancel: String,
     pub open: String,
-    pub toast_ms: u32,
+    /// System notification after copying a color.
+    pub notify: bool,
     pub history_size: usize,
     pub format: usize,
+    pub start_with_computer: bool,
     pub pick_on_launch: bool,
     /// Off: quit once nothing is open (with pick_on_launch, that's "quick pick").
     pub close_to_tray: bool,
+    pub auto_update: bool,
     pub onboarded: bool,
 }
 
@@ -31,11 +34,13 @@ impl Default for Settings {
             cycle: "Key:Control".into(),
             cancel: "Key:Escape".into(),
             open: "Key:Tab".into(),
-            toast_ms: 3000,
+            notify: true,
             history_size: 10,
             format: 0,
+            start_with_computer: false,
             pick_on_launch: false,
             close_to_tray: true,
+            auto_update: true,
             onboarded: false,
         }
     }
@@ -47,11 +52,24 @@ pub struct Entry {
     pub at: u64,
 }
 
+/// Left behind right before an update installs, read on the next start.
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateNotice {
+    pub version: String,
+    /// "background" (restart quietly into the tray), "exit" (installed while
+    /// closing; the next start is a normal one) or "manual" (reopen the window).
+    pub mode: String,
+}
+
 #[derive(Clone, Default, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct Data {
     pub settings: Settings,
     pub history: Vec<Entry>,
+    /// Unix ms of the last automatic update check.
+    pub last_update_check: u64,
+    pub update_notice: Option<UpdateNotice>,
 }
 
 pub struct Store {
@@ -92,12 +110,12 @@ impl Store {
     }
 }
 
+pub fn now_ms() -> u64 {
+    SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or_default()
+}
+
 /// Moves `hex` to the top of the history.
 pub fn remember(data: &mut Data, hex: &str) {
-    let at = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .map(|d| d.as_millis() as u64)
-        .unwrap_or_default();
     data.history.retain(|entry| entry.hex != hex);
-    data.history.insert(0, Entry { hex: hex.into(), at });
+    data.history.insert(0, Entry { hex: hex.into(), at: now_ms() });
 }

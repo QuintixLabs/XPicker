@@ -17,10 +17,12 @@ const DEFAULTS = {
   cycle: 'Key:Control',
   cancel: 'Key:Escape',
   open: 'Key:Tab',
-  toastMs: 3000,
+  notify: true,
   historySize: 10,
+  startWithComputer: false,
   pickOnLaunch: false,
   closeToTray: true,
+  autoUpdate: true,
 };
 
 let state = null;
@@ -305,7 +307,17 @@ $('#replay').addEventListener('click', () => {
 
 // ---------- updates + footer links
 
-window.__TAURI__.app.getVersion().then((v) => ($('#version').textContent = `Version ${v}`));
+let appVersion = '';
+window.__TAURI__.app.getVersion().then((v) => {
+  appVersion = v;
+  $('#version').textContent = `Version ${v}`;
+});
+
+// Automatic updates report what they're doing ("Downloading XPicker 1.0.2…").
+listen('update-status', (e) => {
+  const text = e.payload === 'XPicker' ? '' : ` · ${e.payload}`;
+  $('#version').textContent = `Version ${appVersion}${text}`;
+});
 
 for (const button of $$('[data-link]')) {
   button.addEventListener('click', () => invoke('open_link', { name: button.dataset.link }));
