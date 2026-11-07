@@ -190,6 +190,21 @@ jobs:
           # Stay a draft; only "Publish release" by hand makes it public.
           releaseDraft: true
           includeUpdaterJson: true
-          # Signatures are already inside latest.json; no separate .sig files.
-          uploadUpdaterSignatures: false
           args: ${{ matrix.args }}
+
+  # The signatures are already inside latest.json, so the .sig files the
+  # builds upload are only clutter. Removed once all three builds are in.
+  tidy:
+    needs: [draft, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove the .sig files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ needs.draft.outputs.release-id }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets" --paginate \
+            --jq '.[] | select(.name | endswith(".sig")) | .id' \
+            | while read -r id; do
+                gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$id"
+              done
