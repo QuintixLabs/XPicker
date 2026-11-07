@@ -70,4 +70,6 @@ jobs:
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
+          # Signatures are already inside latest.json; no separate .sig files.
+          uploadUpdaterSignatures: false
           args: ${{ matrix.args }}

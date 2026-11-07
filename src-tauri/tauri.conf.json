@@ -16,7 +16,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis", "dmg", "app", "appimage", "deb", "rpm"],
     "createUpdaterArtifacts": true,
     "shortDescription": "Lightweight screen color picker",
     "icon": [
