@@ -94,6 +94,10 @@ fn open_on_start(app: &AppHandle) {
         _ if at_login => {}
         _ => picker::launch(app),
     }
-    // A login start waits a minute so it doesn't slow down logging in.
-    updates::start_auto(app, Duration::from_secs(if at_login { 60 } else { 10 }));
+    // A login start waits a minute so it doesn't slow down logging in. Quick pick
+    // checks right away, since the app only lives for one pick.
+    let settings = app.state::<store::Store>().get().settings;
+    let quick_pick = settings.pick_on_launch && !settings.close_to_tray;
+    let delay = if at_login { 60 } else if quick_pick { 0 } else { 10 };
+    updates::start_auto(app, Duration::from_secs(delay));
 }

@@ -11,7 +11,7 @@ use std::{
 };
 use tauri::{AppHandle, Manager};
 
-use crate::{capture, clipboard::Clipboard, notify, store::{self, Store}, ui};
+use crate::{capture, clipboard::Clipboard, notify, store::{self, Store}, ui, updates};
 
 #[derive(Default)]
 pub struct Frame {
@@ -61,7 +61,10 @@ pub fn start_from_main(app: &AppHandle) {
 /// "Close to tray" is off; never quits halfway through opening the picker.
 pub fn keep_running(app: &AppHandle) -> bool {
     let frame = app.state::<Frame>();
-    frame.is_starting() || frame.finishing.load(Ordering::Acquire) || app.state::<Store>().get().settings.close_to_tray
+    frame.is_starting()
+        || frame.finishing.load(Ordering::Acquire)
+        || app.state::<updates::Pending>().is_busy() // finish an update download first
+        || app.state::<Store>().get().settings.close_to_tray
 }
 
 /// "Open XPicker" pressed in the picker: show the app, then close the picker.

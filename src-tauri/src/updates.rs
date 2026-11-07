@@ -5,6 +5,8 @@
 // Automatic: while XPicker is open, at most every 6 hours. Downloads quietly,
 //            then installs only when XPicker isn't being used (no picker, no
 //            window), or as it closes. Never interrupts a pick.
+// Quick pick: checks right at launch; if the download is still going after the
+//            pick, the app stays up invisibly to finish and install, then quits.
 // Windows installs in "quiet" mode, so no installer window ever shows.
 
 use std::{
@@ -15,11 +17,13 @@ use std::{
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
-use crate::{notify, picker::Frame, store::{self, Store, UpdateNotice}, ui};
+use crate::{notify, picker::{self, Frame}, store::{self, Store, UpdateNotice}, ui};
 
 const CHECK_EVERY_MS: u64 = 6 * 60 * 60 * 1000;
 const LOOP_EVERY: Duration = Duration::from_secs(15 * 60);
 const IDLE_POLL: Duration = Duration::from_secs(5);
+/// No internet shouldn't keep a quick-pick app hanging around.
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Default)]
 pub struct Pending {
@@ -28,6 +32,13 @@ pub struct Pending {
     /// Downloaded automatically, waiting for a quiet moment.
     ready: Mutex<Option<(Update, Vec<u8>)>>,
     busy: AtomicBool,
+}
+
+impl Pending {
+    /// Checking or downloading right now. Keeps a quick-pick app alive to finish.
+    pub fn is_busy(&self) -> bool {
+        self.busy.load(Ordering::Acquire)
+    }
 }
 
 // ---------- manual (Settings button)
@@ -96,16 +107,17 @@ fn auto_update(app: &AppHandle) {
     }
 
     let found = tauri::async_runtime::block_on(async {
-        app.updater().map_err(|e| e.to_string())?.check().await.map_err(|e| e.to_string())
+        let updater = app.updater_builder().timeout(REQUEST_TIMEOUT).build().map_err(|e| e.to_string())?;
+        updater.check().await.map_err(|e| e.to_string())
     });
     app.state::<Store>().update(app, |data| data.last_update_check = store::now_ms());
 
     if let Ok(Some(update)) = found {
         let version = update.version.clone();
         if !installs_silently() {
-            notify::info(app, "Update available", &format!("XPicker {version} is ready. Open Settings → Updates to install it."));
+            notify_when_not_picking(app, "Update available", format!("XPicker {version} is ready. Open Settings → Updates to install it."));
         } else {
-            notify::info(app, &format!("Downloading XPicker {version}…"), "It installs by itself when you're not using XPicker.");
+            notify_when_not_picking(app, &format!("Downloading XPicker {version}…"), "It installs by itself when you're not using XPicker.".into());
             status(app, &format!("Downloading XPicker {version}…"));
             let bytes = tauri::async_runtime::block_on(update.download(|_, _| {}, || {}));
             match bytes {
@@ -122,6 +134,29 @@ fn auto_update(app: &AppHandle) {
         }
     }
     pending.busy.store(false, Ordering::Release);
+    quit_if_done(app);
+}
+
+/// Quick pick: the app may have stayed up only to finish the update; quit now.
+fn quit_if_done(app: &AppHandle) {
+    if !picker::keep_running(app) && app.webview_windows().is_empty() {
+        app.exit(0);
+    }
+}
+
+/// While the picker is on screen Windows holds banners back, so wait for it to close.
+fn notify_when_not_picking(app: &AppHandle, title: &str, body: String) {
+    let (app, title) = (app.clone(), title.to_owned());
+    thread::spawn(move || {
+        while is_picking(&app) {
+            thread::sleep(Duration::from_millis(300));
+        }
+        notify::info(&app, &title, &body);
+    });
+}
+
+fn is_picking(app: &AppHandle) -> bool {
+    ui::find(app, ui::OVERLAY).is_some() || app.state::<Frame>().is_starting()
 }
 
 /// Linux .deb/.rpm installs need the user's password, so they're never automatic.
@@ -141,8 +176,11 @@ fn install_when_idle(app: &AppHandle) {
             let ready = app.state::<Pending>().ready.lock().unwrap().take();
             if let Some((update, bytes)) = ready {
                 let mode = if app.state::<Store>().get().settings.close_to_tray { "background" } else { "exit" };
-                if let Err(err) = apply(app, update, &bytes, mode) {
-                    eprintln!("XPicker: update install failed: {err}");
+                match apply(app, update, &bytes, mode) {
+                    // Installed without reopening (quick pick, macOS/Linux): quit like it would have.
+                    Ok(()) if mode == "exit" => app.exit(0),
+                    Ok(()) => {}
+                    Err(err) => eprintln!("XPicker: update install failed: {err}"),
                 }
             }
             return;
@@ -153,9 +191,8 @@ fn install_when_idle(app: &AppHandle) {
 
 /// Nobody is using XPicker: no picker open or opening, no visible window.
 fn is_idle(app: &AppHandle) -> bool {
-    let picking = ui::find(app, ui::OVERLAY).is_some() || app.state::<Frame>().is_starting();
     let window_open = app.get_webview_window(ui::MAIN).is_some_and(|w| w.is_visible().unwrap_or(false));
-    !picking && !window_open
+    !is_picking(app) && !window_open
 }
 
 /// Called as XPicker exits: a downloaded update installs now, without reopening.
