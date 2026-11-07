@@ -21,6 +21,8 @@ pub struct Frame {
     restore_main: AtomicBool,
     /// A pick is being set up; ignore repeated triggers.
     starting: AtomicBool,
+    /// A pick is wrapping up (copy + notification); don't quit yet.
+    finishing: AtomicBool,
 }
 
 impl Frame {
@@ -28,6 +30,10 @@ impl Frame {
         self.starting.load(Ordering::Acquire)
     }
 }
+
+/// Windows holds notification banners back while a full-screen window (the
+/// picker) is in front. This gives it a moment to notice the picker is gone.
+const AFTER_PICKER_CLOSES: Duration = Duration::from_millis(300);
 
 /// App opened by the user (first launch or relaunch): picker or main window, per settings.
 pub fn launch(app: &AppHandle) {
@@ -54,7 +60,8 @@ pub fn start_from_main(app: &AppHandle) {
 /// Asked when the last window closes. Stays alive in the tray unless
 /// "Close to tray" is off; never quits halfway through opening the picker.
 pub fn keep_running(app: &AppHandle) -> bool {
-    app.state::<Frame>().is_starting() || app.state::<Store>().get().settings.close_to_tray
+    let frame = app.state::<Frame>();
+    frame.is_starting() || frame.finishing.load(Ordering::Acquire) || app.state::<Store>().get().settings.close_to_tray
 }
 
 /// "Open XPicker" pressed in the picker: show the app, then close the picker.
@@ -112,19 +119,30 @@ fn open(app: &AppHandle) -> Result<(), Box<dyn Error>> {
 
 /// Runs on a worker thread (async command).
 pub fn finish(app: &AppHandle, value: &str, hex: &str, format: usize) -> Result<(), String> {
-    app.state::<Clipboard>().copy(value)?;
+    let frame = app.state::<Frame>();
+    frame.finishing.store(true, Ordering::Release);
+
+    let copied = app.state::<Clipboard>().copy(value);
     let data = app.state::<Store>().update(app, |data| {
         store::remember(data, hex);
         data.settings.format = format;
     });
 
-    // Notify before closing the picker: in quick pick the app may quit right after.
-    if data.settings.notify {
-        notify::copied(app, value, hex);
-    }
+    // Close the picker first: while it's on screen, Windows would send the
+    // notification straight to the notification center without showing it.
     if let Some(overlay) = ui::find(app, ui::OVERLAY) {
         let _ = overlay.destroy();
     }
     closed(app);
-    Ok(())
+    if copied.is_ok() && data.settings.notify {
+        thread::sleep(AFTER_PICKER_CLOSES);
+        notify::copied(app, value, hex);
+    }
+
+    frame.finishing.store(false, Ordering::Release);
+    // Quick pick: the app stayed up only for the notification; quit now.
+    if !keep_running(app) && app.webview_windows().is_empty() {
+        app.exit(0);
+    }
+    copied
 }

@@ -331,8 +331,7 @@ const UPDATE_TEXT = {
   error: "Couldn't check for updates",
 };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-let loadingSvg = '';
-fetch('assets/icons/loading.svg').then((r) => r.text()).then((svg) => (loadingSvg = svg));
+const SPINNER = '<i class="icon icon-loading is-spinning"></i>';
 
 /** Cross-fades the update button to a new state. */
 async function setUpdate(state, text = UPDATE_TEXT[state]) {
@@ -341,7 +340,7 @@ async function setUpdate(state, text = UPDATE_TEXT[state]) {
   content.classList.add('is-swapping');
   await wait(140);
   button.dataset.state = state;
-  const icon = { checking: loadingSvg, updating: loadingSvg, latest: '<i class="icon icon-check"></i>' }[state] ?? '';
+  const icon = { checking: SPINNER, updating: SPINNER, latest: '<i class="icon icon-check"></i>' }[state] ?? '';
   button.querySelector('.update-icon').innerHTML = icon;
   button.querySelector('.update-text').textContent = text;
   content.classList.remove('is-swapping');

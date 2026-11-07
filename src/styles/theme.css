@@ -87,10 +87,23 @@ button {
 .icon-quintix { --icon: url("../assets/icons/footer/quintix.svg"); }
 .icon-rotate-ccw { --icon: url("../assets/icons/rotate-ccw.svg"); }
 .icon-keyboard { --icon: url("../assets/icons/keyboard.svg"); }
+.icon-loading { --icon: url("../assets/icons/loading.svg"); }
 .icon-panel-close { --icon: url("../assets/icons/panel-left-close.svg"); }
 .icon-panel-open { --icon: url("../assets/icons/panel-left-open.svg"); }
 .icon-pipette { --icon: url("../assets/icons/pipette.svg"); }
 .icon-settings { --icon: url("../assets/icons/settings.svg"); }
+
+/* SVG's own animation doesn't run for icons added after the page loads,
+   so spinners turn with CSS instead. */
+.is-spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 kbd {
   display: inline-flex;
