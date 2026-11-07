@@ -1,6 +1,7 @@
-# Builds XPicker for Windows, macOS and Linux into a DRAFT GitHub Release.
-# Runs when the version in package.json changes on main (see docs/contents/03_RELEASING.md).
+# Makes a DRAFT GitHub Release for the version in package.json, with notes
+# built from the commits, then builds Windows, macOS and Linux into it.
 # Nothing reaches users until you click "Publish release", which also creates the tag.
+# See docs/contents/03_RELEASING.md.
 #
 # Needs one repository secret:
 #   TAURI_SIGNING_PRIVATE_KEY   contents of the updater private key file
@@ -16,10 +17,124 @@ on:
     paths: [package.json]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  release:
-    permissions:
-      contents: write
+  draft:
+    runs-on: ubuntu-latest
+    outputs:
+      release-id: ${{ steps.draft.outputs.release-id }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # tags and history, for the notes
+
+      - name: Create the draft
+        id: draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "The version in package.json should look like 1.2.3, not: $version" >&2
+            exit 1
+          fi
+          tag="v$version"
+
+          # Drafts have no tag yet, so look the release up by name in the list.
+          existing="$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.tag_name == \"$tag\") | \"\(.id) \(.draft)\"" | head -n 1)"
+          if [ -n "$existing" ]; then
+            read -r id draft <<<"$existing"
+            if [ "$draft" != "true" ]; then
+              echo "$tag is already published. Change the version in package.json to make a new release." >&2
+              exit 1
+            fi
+            echo "$tag already has a draft, building into it again"
+            echo "release-id=$id" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          download="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$tag"
+          previous="$(git tag --list 'v[0-9]*' --sort=-v:refname | sed -n 1p)"
+          {
+            cat <<EOF
+          ## 📥 Downloads
+
+          <table>
+            <tbody>
+              <tr>
+                <td>🪟 Windows</td>
+                <td>⚙️ Installer (.exe)</td>
+                <td><a href="$download/XPicker_${version}_x64-setup.exe">XPicker Setup (64-bit)</a></td>
+              </tr>
+              <tr>
+                <td>🍎 macOS</td>
+                <td>💿 Disk Image (.dmg)</td>
+                <td><a href="$download/XPicker_${version}_universal.dmg">XPicker (Intel and Apple Silicon)</a></td>
+              </tr>
+              <tr>
+                <td rowspan="3">🐧 Linux</td>
+                <td>📦 AppImage</td>
+                <td><a href="$download/XPicker_${version}_amd64.AppImage">XPicker.AppImage</a></td>
+              </tr>
+              <tr>
+                <td>🧩 Debian / Ubuntu (.deb)</td>
+                <td><a href="$download/XPicker_${version}_amd64.deb">XPicker.deb</a></td>
+              </tr>
+              <tr>
+                <td>🎩 Fedora / openSUSE (.rpm)</td>
+                <td><a href="$download/XPicker-${version}-1.x86_64.rpm">XPicker.rpm</a></td>
+              </tr>
+            </tbody>
+          </table>
+
+          Already have XPicker? Update from inside the app: **Settings → Updates → Check for updates**.
+
+          EOF
+
+            if [ -z "$previous" ]; then
+              echo "First release of XPicker."
+            else
+              # The commit that changes the version means nothing to users.
+              commits="$(git log --no-merges --invert-grep --grep='^chore: release ' --pretty='%s' "$previous..HEAD")"
+              # What comes after the type, like (picker) or !, up to the colon.
+              rest='(\([^)]*\))?!?:'
+
+              # The heading already says the type, so it is left out of each line. A
+              # heading with nothing under it is left out. Fix: counts the same as fix:.
+              section() {
+                local lines
+                lines="$(grep -iE "^$2$rest" <<<"$commits" | sed -E "s/^$2$rest *//I; s/^./\U&/; s/^/- /" || true)"
+                if [ -n "$lines" ]; then printf '## %s\n%s\n\n' "$1" "$lines"; fi
+              }
+              section "🪐 New features" feat
+              section "🐛 Fixes" fix
+              section "📚 Docs" docs
+              section "♻️ Refactors" refactor
+              section "🧪 Tests" test
+              section "🔧 Chores" chore
+
+              # Anything else keeps its whole message, since there is no heading to say what it is.
+              other="$(grep -iEv "^(feat|fix|docs|refactor|test|chore)$rest" <<<"$commits" | sed 's/^/- /' || true)"
+              if [ -n "$other" ]; then printf '## 📝 Other\n%s\n\n' "$other"; fi
+
+              echo "## Contributors"
+              gh api --paginate "repos/$GITHUB_REPOSITORY/compare/$previous...$GITHUB_SHA" \
+                --jq '.commits[].author.login // empty' \
+                | grep -v '\[bot\]$' | sort -u | sed 's/^/- @/'
+              echo
+              echo "Full Changelog: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/$previous...$tag"
+            fi
+          } >notes.md
+
+          gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$tag" --notes-file notes.md
+          id="$(gh api "repos/$GITHUB_REPOSITORY/releases" --jq ".[] | select(.tag_name == \"$tag\") | .id" | head -n 1)"
+          echo "release-id=$id" >>"$GITHUB_OUTPUT"
+
+  build:
+    needs: draft
     strategy:
       fail-fast: false
       matrix:
@@ -64,11 +179,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: v__VERSION__
-          releaseName: XPicker v__VERSION__
-          releaseBody: Download the installer for your system below. Existing installs update from inside the app (Settings → Check for updates).
-          releaseDraft: true
-          prerelease: false
+          releaseId: ${{ needs.draft.outputs.release-id }}
           includeUpdaterJson: true
           # Signatures are already inside latest.json; no separate .sig files.
           uploadUpdaterSignatures: false

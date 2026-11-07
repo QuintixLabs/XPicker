@@ -82,8 +82,8 @@ Test everything on `dev` first, and make sure it's on `main`.
    git push origin main
    ```
 
-3. On GitHub, open **Releases**. The workflow builds Windows, macOS and Linux and makes a draft called `v1.1.0` with the installers. This takes around 15 minutes. Users get nothing yet.
-4. Write the notes. **Generate release notes** lists the commits; remove anything that doesn't matter to users.
+3. On GitHub, open **Releases**. The workflow makes a draft called `v1.1.0` with a downloads table and the commits sorted under headings, with the contributors listed. Then it builds Windows, macOS and Linux into it. This takes around 15 minutes. Users get nothing yet.
+4. Edit the notes. Remove anything that doesn't matter to users.
 5. Click **Publish release**. This creates the tag, and **Check for updates** in installed copies now finds it.
 
 Publishing also makes `dev` behind `main`. Bring it along:
