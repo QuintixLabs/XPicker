@@ -1,7 +1,8 @@
 // Copies the version from package.json (the single source of truth) into
-// src-tauri/Cargo.toml. Runs automatically during `npm version <x.y.z>`.
+// src-tauri/Cargo.toml and Cargo.lock. Runs automatically during `npm version <x.y.z>`.
 // tauri.conf.json already reads package.json directly.
 
+import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
@@ -15,4 +16,6 @@ if (updated === cargo && !cargo.includes(`version = "${version}"`)) {
 }
 
 writeFileSync(cargoPath, updated);
-console.log(`Version ${version} synced to Cargo.toml`);
+// Only refreshes XPicker's own entry in Cargo.lock; dependencies stay as they are.
+execSync('cargo update --workspace --offline', { cwd: 'src-tauri', stdio: 'ignore' });
+console.log(`Version ${version} synced to Cargo.toml and Cargo.lock`);

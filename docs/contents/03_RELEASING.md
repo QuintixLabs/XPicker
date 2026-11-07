@@ -72,12 +72,12 @@ Test everything on `dev` first, and make sure it's on `main`.
    npm version 1.1.0 --no-git-tag-version
    ```
 
-   This changes `package.json` and copies the number into `src-tauri/Cargo.toml`. The app reads its version from `package.json`, so that's the only place it lives.
+   This changes `package.json` and copies the number into `src-tauri/Cargo.toml` and `Cargo.lock`. The app reads its version from `package.json`, so that's the only place to change it.
 
 2. Commit and push it:
 
    ```sh
-   git add package.json package-lock.json src-tauri/Cargo.toml
+   git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock
    git commit -m "chore: release 1.1.0"
    git push origin main
    ```
