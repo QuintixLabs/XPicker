@@ -12,6 +12,7 @@
 
 mod capture;
 mod clipboard;
+mod color;
 mod commands;
 mod notify;
 mod picker;
@@ -65,6 +66,7 @@ fn main() {
             commands::pause_shortcut,
             commands::check_update,
             commands::install_update,
+            commands::pending_update,
             commands::open_link,
         ])
         .build(tauri::generate_context!())

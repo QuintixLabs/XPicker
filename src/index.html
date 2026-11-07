@@ -30,6 +30,18 @@
     </aside>
 
     <main>
+      <!-- Shown only when an update is downloaded while this window is open. -->
+      <div id="update-bar" class="update-bar-wrap">
+        <div class="update-bar-inner">
+          <div class="update-bar">
+            <span class="update-bar-dot"></span>
+            <span id="update-bar-text" class="update-bar-text"></span>
+            <button id="update-restart" class="btn btn-muted btn-sm">Restart</button>
+            <button id="update-later" class="btn btn-ghost btn-sm">Later</button>
+          </div>
+        </div>
+      </div>
+
       <!-- First launch: intro → keys → done. Every step shares one layout
            (icon, title, text, body) and the buttons/dots never move. -->
       <section id="welcome" class="view welcome" hidden>
@@ -233,7 +245,9 @@
             </div>
             <button id="update" class="btn btn-muted update" data-state="idle">
               <span class="update-content">
-                <span class="update-icon"></span>
+                <!-- loading.svg inline from the start, so its own animation runs at its own pace -->
+                <svg class="update-spinner" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="18" d="M12 3c4.97 0 9 4.03 9 9"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="18;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path><path stroke-dasharray="60" d="M12 3c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9c0 -4.97 4.03 -9 9 -9Z" opacity="0.3"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.2s" values="60;0"/></path></g></svg>
+                <i class="icon icon-check update-done"></i>
                 <span class="update-text">Check for updates</span>
               </span>
             </button>
@@ -265,8 +279,8 @@
         <p id="confirm-title" class="dialog-title"></p>
         <p id="confirm-text" class="dialog-text"></p>
         <div class="dialog-actions">
-          <button value="cancel" class="btn btn-muted">Cancel</button>
           <button value="ok" id="confirm-ok" class="btn btn-danger"></button>
+          <button value="cancel" class="btn btn-muted">Cancel</button>
         </div>
       </form>
     </dialog>

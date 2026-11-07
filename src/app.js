@@ -313,10 +313,9 @@ window.__TAURI__.app.getVersion().then((v) => {
   $('#version').textContent = `Version ${v}`;
 });
 
-// Automatic updates report what they're doing ("Downloading XPicker 1.0.2…").
+// Automatic updates report what they're doing ("Updating to 1.0.4…"); null when done.
 listen('update-status', (e) => {
-  const text = e.payload === 'XPicker' ? '' : ` · ${e.payload}`;
-  $('#version').textContent = `Version ${appVersion}${text}`;
+  $('#version').textContent = `Version ${appVersion}${e.payload ? ` · ${e.payload}` : ''}`;
 });
 
 for (const button of $$('[data-link]')) {
@@ -328,26 +327,39 @@ const UPDATE_TEXT = {
   checking: 'Checking…',
   latest: "You're up to date",
   updating: 'Updating…',
+  ready: 'Restart to update',
   error: "Couldn't check for updates",
 };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-const SPINNER = '<i class="icon icon-loading is-spinning"></i>';
 
-/** Cross-fades the update button to a new state. */
+/** Cross-fades the update button to a new state (the CSS shows the spinner / check for it). */
 async function setUpdate(state, text = UPDATE_TEXT[state]) {
   const button = $('#update');
   const content = button.querySelector('.update-content');
   content.classList.add('is-swapping');
   await wait(140);
   button.dataset.state = state;
-  const icon = { checking: SPINNER, updating: SPINNER, latest: '<i class="icon icon-check"></i>' }[state] ?? '';
-  button.querySelector('.update-icon').innerHTML = icon;
   button.querySelector('.update-text').textContent = text;
   content.classList.remove('is-swapping');
 }
 
+/** Installs the waiting update; XPicker restarts and reopens on the new version. */
+async function restartToUpdate() {
+  $('#update-bar').classList.remove('is-open');
+  await setUpdate('updating', 'Restarting…');
+  try {
+    await invoke('install_update');
+  } catch {
+    await setUpdate('error', "Couldn't install the update");
+    await wait(4000);
+    setUpdate(readyVersion ? 'ready' : 'idle');
+  }
+}
+
 async function checkForUpdates() {
-  if ($('#update').dataset.state !== 'idle') return;
+  const current = $('#update').dataset.state;
+  if (current === 'ready') return restartToUpdate();
+  if (current !== 'idle') return;
   await setUpdate('checking');
   const started = performance.now();
   try {
@@ -370,6 +382,35 @@ async function checkForUpdates() {
 $('#update').addEventListener('click', checkForUpdates);
 listen('update-progress', (e) => {
   $('#update .update-text').textContent = `Updating… ${e.payload}%`;
+});
+
+// ---------- update bar: "XPicker 1.0.4 is ready. Restart to update now?"
+// Only while an update is downloaded and this window is open. "Later" hides it
+// for that version; it then installs by itself once the window is closed.
+
+let readyVersion = null;
+const dismissed = new Set();
+
+function renderUpdateBar() {
+  const show = Boolean(readyVersion) && !dismissed.has(readyVersion);
+  if (readyVersion) $('#update-bar-text').textContent = `XPicker ${readyVersion} is ready. Restart to update now?`;
+  $('#update-bar').classList.toggle('is-open', show);
+}
+
+function updateReady(version) {
+  if (!version) return;
+  readyVersion = version;
+  renderUpdateBar();
+  if ($('#update').dataset.state === 'idle') setUpdate('ready');
+}
+
+listen('update-ready', (e) => updateReady(e.payload));
+invoke('pending_update').then(updateReady);
+
+$('#update-restart').addEventListener('click', restartToUpdate);
+$('#update-later').addEventListener('click', () => {
+  dismissed.add(readyVersion);
+  renderUpdateBar();
 });
 
 // ---------- shortcut recording
@@ -474,6 +515,8 @@ listen('state', (e) => {
 
 state = await invoke('state');
 render();
-show(state.settings.onboarded ? 'colors' : 'welcome');
+// The tray's "Settings" opens the window straight on that page.
+show(state.settings.onboarded ? (window.__START_PAGE__ ?? 'colors') : 'welcome');
+listen('navigate', (e) => state.settings.onboarded && show(e.payload));
 goStep(0);
 setInterval(renderColors, 60000); // keep "5m ago" fresh

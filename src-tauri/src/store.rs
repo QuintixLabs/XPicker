@@ -92,21 +92,26 @@ impl Store {
         self.data.lock().unwrap().clone()
     }
 
-    /// Mutates, saves to disk and notifies every window.
+    /// Mutates, saves to disk, then tells every window and the tray menu.
     pub fn update(&self, app: &AppHandle, change: impl FnOnce(&mut Data)) -> Data {
-        let mut data = self.data.lock().unwrap();
-        change(&mut data);
-        let size = data.settings.history_size;
-        data.history.truncate(size);
+        let data = {
+            let mut data = self.data.lock().unwrap();
+            change(&mut data);
+            let size = data.settings.history_size;
+            data.history.truncate(size);
 
-        if let Some(dir) = self.path.parent() {
-            let _ = fs::create_dir_all(dir);
-        }
-        if let Ok(json) = serde_json::to_string_pretty(&*data) {
-            let _ = fs::write(&self.path, json);
-        }
-        let _ = app.emit("state", &*data);
-        data.clone()
+            if let Some(dir) = self.path.parent() {
+                let _ = fs::create_dir_all(dir);
+            }
+            if let Ok(json) = serde_json::to_string_pretty(&*data) {
+                let _ = fs::write(&self.path, json);
+            }
+            data.clone()
+        }; // lock released: the tray reads the store while rebuilding
+
+        let _ = app.emit("state", &data);
+        crate::tray::refresh(app);
+        data
     }
 }
 

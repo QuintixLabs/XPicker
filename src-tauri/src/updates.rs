@@ -17,7 +17,7 @@ use std::{
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
-use crate::{notify, picker::{self, Frame}, store::{self, Store, UpdateNotice}, ui};
+use crate::{notify, picker::{self, Frame}, store::{self, Store, UpdateNotice}, tray, ui};
 
 const CHECK_EVERY_MS: u64 = 6 * 60 * 60 * 1000;
 const LOOP_EVERY: Duration = Duration::from_secs(15 * 60);
@@ -117,19 +117,19 @@ fn auto_update(app: &AppHandle) {
         if !installs_silently() {
             notify_when_not_picking(app, "Update available", format!("XPicker {version} is ready. Open Settings → Updates to install it."));
         } else {
-            notify_when_not_picking(app, &format!("Downloading XPicker {version}…"), "It installs by itself when you're not using XPicker.".into());
-            status(app, &format!("Downloading XPicker {version}…"));
+            // No "downloading" notification: it takes a second or two. The user
+            // hears about it once, when it's done ("XPicker was updated to …").
+            status(app, Some(&format!("Updating to {version}…")));
             let bytes = tauri::async_runtime::block_on(update.download(|_, _| {}, || {}));
+            status(app, None);
             match bytes {
                 Ok(bytes) => {
                     *pending.ready.lock().unwrap() = Some((update, bytes));
-                    status(app, &format!("XPicker {version} is ready"));
+                    // An open window shows "XPicker 1.0.4 is ready. Restart to update now?"
+                    let _ = app.emit("update-ready", &version);
                     install_when_idle(app);
                 }
-                Err(err) => {
-                    eprintln!("XPicker: update download failed: {err}");
-                    status(app, "XPicker");
-                }
+                Err(err) => eprintln!("XPicker: update download failed: {err}"),
             }
         }
     }
@@ -223,12 +223,15 @@ fn apply(app: &AppHandle, update: Update, bytes: &[u8], mode: &str) -> Result<()
     Ok(())
 }
 
-/// Live status for Settings → Updates and the tray tooltip.
-fn status(app: &AppHandle, text: &str) {
+/// Live status for Settings → Updates and the tray hover text. None = back to normal.
+fn status(app: &AppHandle, text: Option<&str>) {
     let _ = app.emit("update-status", text);
-    if let Some(tray) = app.tray_by_id("xpicker") {
-        let _ = tray.set_tooltip(Some(text));
-    }
+    tray::set_status(app, text);
+}
+
+/// A downloaded update waiting to install, so a newly opened window can show its bar.
+pub fn ready_version(app: &AppHandle) -> Option<String> {
+    app.state::<Pending>().ready.lock().unwrap().as_ref().map(|(update, _)| update.version.clone())
 }
 
 /// Read at startup: was XPicker just updated? Tells the user once.

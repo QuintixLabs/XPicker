@@ -764,6 +764,65 @@ main:has(.welcome:not([hidden])) {
   margin: 12px -10px 0;
 }
 
+/* ---------- update bar (top of the page, only while an update waits) */
+
+/* Grows open/shut from zero height, so the page below moves smoothly, never jumps. */
+.update-bar-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 240ms var(--ease), opacity 200ms;
+}
+
+.update-bar-wrap.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.update-bar-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.is-welcome .update-bar-wrap {
+  display: none;
+}
+
+.update-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 6px 6px 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.update-bar-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-right: 2px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.update-bar-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.btn-sm {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
 /* ---------- footer (end of settings) */
 
 .app-footer {
@@ -818,18 +877,22 @@ main:has(.welcome:not([hidden])) {
   opacity: 0;
 }
 
-.update-icon:empty {
+/* Spinner while checking/updating, check mark when up to date, nothing otherwise. */
+.update-spinner,
+.update-done {
   display: none;
-}
-
-.update-icon svg,
-.update-icon .icon {
-  display: block;
+  flex: none;
   width: 15px;
   height: 15px;
 }
 
-.update[data-state="latest"] .update-icon {
+.update[data-state="checking"] .update-spinner,
+.update[data-state="updating"] .update-spinner {
+  display: block;
+}
+
+.update[data-state="latest"] .update-done {
+  display: block;
   color: var(--accent);
 }
 

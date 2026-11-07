@@ -94,6 +94,12 @@ pub async fn install_update(app: AppHandle) -> Result<(), String> {
     updates::install(&app).await
 }
 
+/// Version of a downloaded update waiting to install, if any.
+#[tauri::command]
+pub async fn pending_update(app: AppHandle) -> Option<String> {
+    updates::ready_version(&app)
+}
+
 /// Footer links. Only these addresses can be opened from the UI.
 const LINKS: [(&str, &str); 3] = [
     ("github", "https://github.com/QuintixLabs/XPicker"),

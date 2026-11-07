@@ -93,18 +93,6 @@ button {
 .icon-pipette { --icon: url("../assets/icons/pipette.svg"); }
 .icon-settings { --icon: url("../assets/icons/settings.svg"); }
 
-/* SVG's own animation doesn't run for icons added after the page loads,
-   so spinners turn with CSS instead. */
-.is-spinning {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 kbd {
   display: inline-flex;
   align-items: center;

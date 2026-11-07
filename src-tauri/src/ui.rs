@@ -6,7 +6,7 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
     thread,
 };
-use tauri::{window::Color, AppHandle, Manager, Monitor, Theme, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+use tauri::{window::Color, AppHandle, Emitter, Manager, Monitor, Theme, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 pub const MAIN: &str = "main";
 pub const OVERLAY: &str = "overlay";
@@ -44,14 +44,31 @@ pub fn open_main_async(app: &AppHandle) {
     });
 }
 
+/// Opens the window on a page ("settings").
+pub fn open_page_async(app: &AppHandle, page: &'static str) {
+    let app = app.clone();
+    thread::spawn(move || {
+        let _ = open(&app, Some(page));
+    });
+}
+
 pub fn open_main(app: &AppHandle) -> tauri::Result<()> {
+    open(app, None)
+}
+
+fn open(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window(MAIN) {
+        if let Some(page) = page {
+            let _ = window.emit("navigate", page);
+        }
         window.unminimize()?;
         window.show()?;
         return window.set_focus();
     }
 
+    let start = page.map(|p| format!("window.__START_PAGE__ = {p:?};")).unwrap_or_default();
     WebviewWindowBuilder::new(app, MAIN, WebviewUrl::App("index.html".into()))
+        .initialization_script(&start)
         .title("XPicker")
         .inner_size(760.0, 600.0)
         .resizable(false)
