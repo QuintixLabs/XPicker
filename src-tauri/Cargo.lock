@@ -776,6 +776,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "914a755b7c2d4af2bdcff7ce1739e2db9a1b81a9b07123d8015786ae03c0980d"
 
 [[package]]
+name = "dark-light"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f66b71ac6b73812b0bf51cda8dd646a268fbb38623f45b2b7907593c323f745"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "objc2",
+ "objc2-foundation",
+ "wasm-bindgen",
+ "web-sys",
+ "windows-sys 0.61.2",
+ "winreg",
+ "zbus",
+]
+
+[[package]]
 name = "darling"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4508,6 +4525,7 @@ dependencies = [
  "gtk",
  "heck 0.5.0",
  "http",
+ "image",
  "jni 0.21.1",
  "libc",
  "log",
@@ -6183,6 +6201,7 @@ name = "xpicker"
 version = "1.0.7"
 dependencies = [
  "arboard",
+ "dark-light",
  "notify-rust",
  "serde",
  "serde_json",

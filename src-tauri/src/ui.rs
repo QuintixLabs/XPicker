@@ -6,9 +6,9 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
     thread,
 };
-use tauri::{window::Color, AppHandle, Emitter, Manager, Monitor, Theme, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+use tauri::{window::Color, AppHandle, Emitter, Manager, Monitor, Theme, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent};
 
-use crate::store::Store;
+use crate::{logo, store::Store};
 
 pub const MAIN: &str = "main";
 pub const OVERLAY: &str = "overlay";
@@ -84,7 +84,7 @@ fn open(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
     let start = page.map(|p| format!("window.__START_PAGE__ = {p:?};")).unwrap_or_default();
     let theme = window_theme(&app.state::<Store>().get().settings.theme);
     let background = if theme == Some(Theme::Light) { Color(246, 246, 247, 255) } else { Color(11, 11, 12, 255) };
-    WebviewWindowBuilder::new(app, MAIN, WebviewUrl::App("index.html".into()))
+    let window = WebviewWindowBuilder::new(app, MAIN, WebviewUrl::App("index.html".into()))
         .initialization_script(&start)
         .title("XPicker")
         .inner_size(760.0, 600.0)
@@ -94,11 +94,24 @@ fn open(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
         .theme(theme)
         .background_color(background)
         .build()?;
+
+    // Keep the title bar logo readable whenever the title bar changes color.
+    logo::update_window(&window);
+    let tracked = window.clone();
+    window.on_window_event(move |event| {
+        if let WindowEvent::ThemeChanged(_) = event {
+            logo::update_window(&tracked);
+        }
+    });
     Ok(())
 }
 
-/// The title bar follows the theme. None = the system's own setting.
+/// The title bar follows XPicker's theme; None = the system's own setting.
+/// On Linux the desktop draws the title bar with its own theme, so it's left alone.
 pub fn window_theme(theme: &str) -> Option<Theme> {
+    if cfg!(target_os = "linux") {
+        return None;
+    }
     match theme {
         "light" => Some(Theme::Light),
         "dark" => Some(Theme::Dark),
@@ -109,5 +122,6 @@ pub fn window_theme(theme: &str) -> Option<Theme> {
 pub fn apply_theme(app: &AppHandle, theme: &str) {
     if let Some(window) = app.get_webview_window(MAIN) {
         let _ = window.set_theme(window_theme(theme));
+        logo::update_window(&window);
     }
 }

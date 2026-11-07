@@ -43,9 +43,20 @@ impl Pending {
 
 // ---------- manual (Settings button)
 
+/// Right after publishing, GitHub can serve the previous latest.json from its
+/// cache for a while; ask for a fresh copy every time.
+fn updater(app: &AppHandle) -> Result<tauri_plugin_updater::Updater, String> {
+    app.updater_builder()
+        .timeout(REQUEST_TIMEOUT)
+        .header("Cache-Control", "no-cache")
+        .and_then(|b| b.header("Pragma", "no-cache"))
+        .and_then(|b| b.build())
+        .map_err(|e| e.to_string())
+}
+
 /// Returns the new version, or None when already up to date.
 pub async fn check(app: &AppHandle) -> Result<Option<String>, String> {
-    let update = app.updater().map_err(|e| e.to_string())?.check().await.map_err(|e| e.to_string())?;
+    let update = updater(app)?.check().await.map_err(|e| e.to_string())?;
     let version = update.as_ref().map(|u| u.version.clone());
     *app.state::<Pending>().found.lock().unwrap() = update;
     Ok(version)
@@ -106,10 +117,7 @@ fn auto_update(app: &AppHandle) {
         return;
     }
 
-    let found = tauri::async_runtime::block_on(async {
-        let updater = app.updater_builder().timeout(REQUEST_TIMEOUT).build().map_err(|e| e.to_string())?;
-        updater.check().await.map_err(|e| e.to_string())
-    });
+    let found = tauri::async_runtime::block_on(async { updater(app)?.check().await.map_err(|e| e.to_string()) });
     app.state::<Store>().update(app, |data| data.last_update_check = store::now_ms());
 
     if let Ok(Some(update)) = found {

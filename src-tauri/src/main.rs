@@ -14,6 +14,7 @@ mod capture;
 mod clipboard;
 mod color;
 mod commands;
+mod logo;
 mod notify;
 mod picker;
 mod shortcut;

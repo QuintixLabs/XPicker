@@ -39,6 +39,14 @@ let dirty = [];              // physical-px rects drawn last frame
 let lastDraw = 0;
 let pending = false;
 let hintsOnTop = false;
+
+// The hint bar follows the app's theme ("system" = the computer's setting).
+// The loupe stays the same in both: it has to read on any screen content.
+const HINT_COLORS = {
+  dark: { bg: 'rgba(14, 14, 16, 0.9)', border: 'rgba(255, 255, 255, 0.08)', cap: 'rgba(255, 255, 255, 0.1)', key: '#f4f4f5', label: '#a1a1a8' },
+  light: { bg: 'rgba(255, 255, 255, 0.94)', border: 'rgba(0, 0, 0, 0.1)', cap: 'rgba(0, 0, 0, 0.06)', key: '#18181b', label: '#6b6b74' },
+};
+let hintColors = HINT_COLORS.dark;
 let armed = null;            // mouse binding pressed down, fires on release
 
 // ---------- pixels
@@ -189,10 +197,10 @@ function drawHints(y) {
   const { items, width, height } = hints;
   const x = Math.round((innerWidth - width) / 2);
 
-  ctx.fillStyle = 'rgba(14, 14, 16, 0.9)';
+  ctx.fillStyle = hintColors.bg;
   roundRect(x, y, width, height, 10);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.strokeStyle = hintColors.border;
   ctx.stroke();
 
   ctx.textBaseline = 'middle';
@@ -202,16 +210,16 @@ function drawHints(y) {
   for (const item of items) {
     item.caps.forEach((cap, i) => {
       const w = item.capWidths[i];
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.fillStyle = hintColors.cap;
       roundRect(cursor, y + 8, w, height - 16, 5);
       ctx.fill();
-      ctx.fillStyle = '#f4f4f5';
+      ctx.fillStyle = hintColors.key;
       ctx.font = `600 11px ${FONT}`;
       ctx.fillText(cap, cursor + 7, mid);
       cursor += w + 4;
     });
     cursor += 3;
-    ctx.fillStyle = '#a1a1a8';
+    ctx.fillStyle = hintColors.label;
     ctx.font = `500 13px ${FONT}`;
     ctx.fillText(item.label, cursor, mid);
     cursor += ctx.measureText(item.label).width + 20;
@@ -341,6 +349,9 @@ async function init() {
   const scale = width / innerWidth;
   shot = { data, width, height, scale, bitmap: await createImageBitmap(image) };
   keys = state.settings;
+  const theme = state.settings.theme;
+  const light = theme === 'light' || (theme === 'system' && matchMedia('(prefers-color-scheme: light)').matches);
+  hintColors = light ? HINT_COLORS.light : HINT_COLORS.dark;
   formatIndex = Math.min(state.settings.format, FORMATS.length - 1);
   hints = measureHints();
   mouse.x = x / scale;

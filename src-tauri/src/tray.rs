@@ -17,12 +17,13 @@ use tauri::{
     AppHandle, Manager,
 };
 
-use crate::{clipboard::Clipboard, color, notify, picker, store::Store, ui};
+use crate::{clipboard::Clipboard, color, logo, notify, picker, store::Store, ui};
 
 const ID: &str = "xpicker";
 const RECENT_COUNT: usize = 5;
 
 pub fn create(app: &AppHandle) -> tauri::Result<()> {
+    let light = logo::taskbar_is_light();
     let mut tray = TrayIconBuilder::with_id(ID)
         .tooltip(tooltip(app))
         .menu(&menu(app)?)
@@ -34,11 +35,27 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
             }
         });
 
-    if let Some(icon) = app.default_window_icon() {
-        tray = tray.icon(icon.clone());
+    if let Some(icon) = logo::tray_icon(light).or_else(|| app.default_window_icon().cloned()) {
+        tray = tray.icon(icon);
     }
     tray.build(app)?;
+    watch_taskbar(app, light);
     Ok(())
+}
+
+/// Swaps the tray logo when the taskbar switches between light and dark.
+fn watch_taskbar(app: &AppHandle, mut light: bool) {
+    let app = app.clone();
+    std::thread::spawn(move || loop {
+        std::thread::sleep(std::time::Duration::from_secs(5));
+        let now = logo::taskbar_is_light();
+        if now != light {
+            light = now;
+            if let (Some(tray), Some(icon)) = (app.tray_by_id(ID), logo::tray_icon(light)) {
+                let _ = tray.set_icon(Some(icon));
+            }
+        }
+    });
 }
 
 /// Rebuilds the menu and tooltip from the current settings and recent colors.

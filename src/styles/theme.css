@@ -51,6 +51,11 @@
   color-scheme: dark;
 }
 
+/* The normal logo's X is white; on light backgrounds use the dark-X version. */
+:root[data-theme="light"] img.logo {
+  content: url("../assets/logo-light.svg");
+}
+
 /* Brief cross-fade when switching themes, instead of a hard flash. */
 :root.theme-changing * {
   transition: background-color 200ms, border-color 200ms, color 200ms !important;
