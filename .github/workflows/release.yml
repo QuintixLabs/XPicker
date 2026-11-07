@@ -180,6 +180,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           releaseId: ${{ needs.draft.outputs.release-id }}
+          # Without this, tauri-action publishes the release when it's done uploading.
+          releaseDraft: true
           includeUpdaterJson: true
           # Signatures are already inside latest.json; no separate .sig files.
           uploadUpdaterSignatures: false
