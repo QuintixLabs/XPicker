@@ -14,7 +14,7 @@ body {
 
 /* Keyboard (Tab) focus only: a quiet neutral ring, no accent color. */
 :focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.2);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -204,7 +204,7 @@ body {
 }
 
 .nav button:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--hover);
   color: var(--text);
 }
 
@@ -319,6 +319,54 @@ main::-webkit-scrollbar-thumb {
 
 .page-head + .section {
   margin-top: 0;
+}
+
+/* A section title with a small action on the same line ("Shortcuts … Reset"). */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 28px 0 10px;
+}
+
+.section-head .section {
+  margin: 0;
+}
+
+.btn-xs {
+  height: 24px;
+  margin-right: -8px; /* text lines up with the group's edge */
+  padding: 0 8px;
+  font-size: 13px;
+}
+
+/* Icon-only segmented control (Theme). */
+.segmented-icons button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  padding: 0;
+}
+
+.segmented-icons .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* A key that's already taken, shown inside the key box. */
+.recorder.is-recording.is-clash {
+  border-color: var(--warning);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--warning) 18%, transparent);
+}
+
+.recorder.is-clash .hint {
+  color: var(--warning);
+}
+
+/* The other row using that key glows briefly so you can see where. */
+.recorder.is-flash {
+  border-color: var(--warning);
+  transition: border-color 120ms;
 }
 
 .label {
@@ -945,7 +993,7 @@ main:has(.welcome:not([hidden])) {
 }
 
 .dialog::backdrop {
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--backdrop);
 }
 
 /* Fades in on open and out on close (see closeDialog in app.js). */

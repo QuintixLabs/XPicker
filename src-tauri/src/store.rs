@@ -14,6 +14,8 @@ pub struct Settings {
     pub cycle: String,
     pub cancel: String,
     pub open: String,
+    /// "system", "light" or "dark".
+    pub theme: String,
     /// System notification after copying a color.
     pub notify: bool,
     pub history_size: usize,
@@ -34,6 +36,7 @@ impl Default for Settings {
             cycle: "Key:Control".into(),
             cancel: "Key:Escape".into(),
             open: "Key:Tab".into(),
+            theme: "system".into(),
             notify: true,
             history_size: 10,
             format: 0,

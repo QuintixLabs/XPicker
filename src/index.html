@@ -160,6 +160,13 @@
         <div class="group">
           <div class="row">
             <div>
+              <div class="row-title">Theme</div>
+              <div class="row-hint">Light, dark, or the same as your system</div>
+            </div>
+            <div class="segmented segmented-icons" data-field="theme" data-kind="icons" data-options="system:monitor:System,light:light:Light,dark:dark:Dark"></div>
+          </div>
+          <div class="row">
+            <div>
               <div class="row-title">Copied notification</div>
               <div class="row-hint">A system notification after you copy a color</div>
             </div>
@@ -174,7 +181,10 @@
           </div>
         </div>
 
-        <h3 class="section">Shortcuts</h3>
+        <div class="section-head">
+          <h3 class="section">Shortcuts</h3>
+          <button id="reset-shortcuts" class="btn btn-ghost btn-xs">Reset</button>
+        </div>
         <div class="group">
           <div class="row">
             <div>
@@ -257,7 +267,7 @@
         <p class="status footer-status" data-default="Changes save automatically."></p>
         <div class="footer">
           <button id="replay" class="btn btn-ghost">Show welcome screen</button>
-          <button id="reset" class="btn btn-ghost"><i class="icon icon-rotate-ccw"></i>Reset to defaults</button>
+          <button id="reset" class="btn btn-ghost"><i class="icon icon-rotate-ccw"></i>Reset all settings</button>
         </div>
 
         <footer class="app-footer">

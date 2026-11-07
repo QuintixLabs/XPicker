@@ -8,6 +8,8 @@ use std::{
 };
 use tauri::{window::Color, AppHandle, Emitter, Manager, Monitor, Theme, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
+use crate::store::Store;
+
 pub const MAIN: &str = "main";
 pub const OVERLAY: &str = "overlay";
 
@@ -67,6 +69,8 @@ fn open(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
     }
 
     let start = page.map(|p| format!("window.__START_PAGE__ = {p:?};")).unwrap_or_default();
+    let theme = window_theme(&app.state::<Store>().get().settings.theme);
+    let background = if theme == Some(Theme::Light) { Color(246, 246, 247, 255) } else { Color(11, 11, 12, 255) };
     WebviewWindowBuilder::new(app, MAIN, WebviewUrl::App("index.html".into()))
         .initialization_script(&start)
         .title("XPicker")
@@ -74,8 +78,23 @@ fn open(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
         .resizable(false)
         .maximizable(false)
         .center()
-        .theme(Some(Theme::Dark))
-        .background_color(Color(11, 11, 12, 255))
+        .theme(theme)
+        .background_color(background)
         .build()?;
     Ok(())
+}
+
+/// The title bar follows the theme. None = the system's own setting.
+pub fn window_theme(theme: &str) -> Option<Theme> {
+    match theme {
+        "light" => Some(Theme::Light),
+        "dark" => Some(Theme::Dark),
+        _ => None,
+    }
+}
+
+pub fn apply_theme(app: &AppHandle, theme: &str) {
+    if let Some(window) = app.get_webview_window(MAIN) {
+        let _ = window.set_theme(window_theme(theme));
+    }
 }

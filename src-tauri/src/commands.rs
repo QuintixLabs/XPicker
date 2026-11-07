@@ -76,6 +76,9 @@ pub async fn save_settings(app: AppHandle, store: State<'_, Store>, settings: Se
     if settings.start_with_computer != previous.start_with_computer {
         startup::set(&app, settings.start_with_computer)?;
     }
+    if settings.theme != previous.theme {
+        ui::apply_theme(&app, &settings.theme);
+    }
     Ok(store.update(&app, |data| data.settings = settings))
 }
 

@@ -17,6 +17,7 @@ const DEFAULTS = {
   cycle: 'Key:Control',
   cancel: 'Key:Escape',
   open: 'Key:Tab',
+  theme: 'system',
   notify: true,
   historySize: 10,
   startWithComputer: false,
@@ -67,12 +68,33 @@ async function save(patch) {
   }
 }
 
+/** Copies, shows "Copied" for a moment, then puts the real value back, however fast you click. */
 async function copy(hex, label) {
-  await invoke('copy', { text: format().format(fromHex(hex)) });
-  const text = label.textContent;
+  const value = format().format(fromHex(hex));
+  await invoke('copy', { text: value });
   label.textContent = 'Copied';
-  setTimeout(() => (label.textContent = text), 1100);
+  clearTimeout(label.copiedTimer);
+  label.copiedTimer = setTimeout(() => (label.textContent = format().format(fromHex(hex))), 1100);
 }
+
+// ---------- theme ("system" follows the computer, and changes with it)
+
+const systemLight = matchMedia('(prefers-color-scheme: light)');
+
+function applyTheme(theme, animate = false) {
+  const root = document.documentElement;
+  const light = theme === 'light' || (theme === 'system' && systemLight.matches);
+  if (animate) {
+    root.classList.add('theme-changing');
+    setTimeout(() => root.classList.remove('theme-changing'), 250);
+  }
+  root.dataset.theme = light ? 'light' : 'dark';
+  try {
+    localStorage.setItem('xpicker.theme', theme); // lets lib/boot.js paint the right theme first
+  } catch {}
+}
+
+systemLight.addEventListener('change', () => state && applyTheme(state.settings.theme, true));
 
 function confirmAction({ title, text, action }) {
   const dialog = $('#confirm');
@@ -254,13 +276,17 @@ function renderSettings() {
     el.innerHTML = caps(el.dataset.field === 'shortcut' ? shortcutKeys(value) : bindingKeys(value));
   }
 
+  // data-options: "value:label,…", or "value:icon:name,…" with data-kind="icons".
   for (const el of $$('.segmented[data-field]')) {
     const current = String(state.settings[el.dataset.field]);
+    const icons = el.dataset.kind === 'icons';
     el.innerHTML = el.dataset.options
       .split(',')
       .map((option) => {
-        const [value, label] = option.split(':');
-        return `<button class="${value === current ? 'is-active' : ''}" data-value="${value}">${label}</button>`;
+        const [value, label, name] = option.split(':');
+        const content = icons ? `<i class="icon icon-${label}"></i>` : label;
+        const title = icons ? ` title="${name}" aria-label="${name}"` : '';
+        return `<button class="${value === current ? 'is-active' : ''}" data-value="${value}"${title}>${content}</button>`;
       })
       .join('');
   }
@@ -283,7 +309,9 @@ function renderSettings() {
 for (const el of $$('.segmented[data-field]')) {
   el.addEventListener('click', (e) => {
     const button = e.target.closest('[data-value]');
-    if (button) save({ [el.dataset.field]: Number(button.dataset.value) });
+    if (!button) return;
+    const raw = button.dataset.value;
+    save({ [el.dataset.field]: Number.isNaN(Number(raw)) ? raw : Number(raw) });
   });
 }
 
@@ -293,11 +321,22 @@ for (const el of $$('.toggle')) {
 
 $('#reset').addEventListener('click', async () => {
   const ok = await confirmAction({
-    title: 'Reset settings?',
-    text: 'Shortcuts and preferences go back to their defaults. Your colors are kept.',
+    title: 'Reset all settings?',
+    text: 'Everything goes back to its default. Your colors are kept.',
     action: 'Reset',
   });
   if (ok) save(DEFAULTS);
+});
+
+const SHORTCUT_FIELDS = ['shortcut', ...Object.keys(ACTIONS)];
+
+$('#reset-shortcuts').addEventListener('click', async () => {
+  const ok = await confirmAction({
+    title: 'Reset shortcuts?',
+    text: 'Your keys go back to the defaults. Other settings stay as they are.',
+    action: 'Reset',
+  });
+  if (ok) save(Object.fromEntries(SHORTCUT_FIELDS.map((f) => [f, DEFAULTS[f]])));
 });
 
 $('#replay').addEventListener('click', () => {
@@ -415,12 +454,13 @@ $('#update-later').addEventListener('click', () => {
 
 // ---------- shortcut recording
 
+const listeningHint = (field) => (field === 'shortcut' ? 'Press a shortcut…' : 'Press a key or click…');
+
 function startRecording(el) {
   stopRecording();
   recording = { el, field: el.dataset.field };
   el.classList.add('is-recording');
-  el.innerHTML = `<span class="hint">${recording.field === 'shortcut' ? 'Press a shortcut…' : 'Press a key or click…'}</span>`;
-  status(recording.field === 'shortcut' ? 'Hold Ctrl, Alt or Shift and press a key. Esc to stop.' : 'Any key or mouse button works. Esc to stop.');
+  el.innerHTML = `<span class="hint">${listeningHint(recording.field)}</span>`;
   if (recording.field === 'shortcut') invoke('pause_shortcut', { paused: true });
 }
 
@@ -428,18 +468,34 @@ function stopRecording() {
   if (!recording) return;
   const { el, field } = recording;
   recording = null;
-  el.classList.remove('is-recording');
+  el.classList.remove('is-recording', 'is-clash');
+  clearTimeout(el.clashTimer);
   if (field === 'shortcut') invoke('pause_shortcut', { paused: false });
   renderSettings();
 }
 
+/** A key that's already taken: say so inside the box, keep listening, and light up its owner. */
+function showClash(el, clash) {
+  el.classList.add('is-clash');
+  el.innerHTML = `<span class="hint">Used by ${ACTIONS[clash]}</span>`;
+  for (const owner of $$(`.recorder[data-field="${clash}"]`)) {
+    owner.classList.add('is-flash');
+    setTimeout(() => owner.classList.remove('is-flash'), 1200);
+  }
+  clearTimeout(el.clashTimer);
+  el.clashTimer = setTimeout(() => {
+    if (recording?.el !== el) return;
+    el.classList.remove('is-clash');
+    el.innerHTML = `<span class="hint">${listeningHint(recording.field)}</span>`;
+  }, 2000);
+}
+
 async function commit(field, value) {
   const clash = Object.keys(ACTIONS).find((f) => f !== field && state.settings[f] === value);
-  if (clash) {
-    status(`${bindingKeys(value)[0]} is already used for ${ACTIONS[clash]}. Try another.`, true);
-    return;
-  }
+  if (clash) return showClash(recording.el, clash); // never saved; still listening
   const { el } = recording;
+  clearTimeout(el.clashTimer);
+  el.classList.remove('is-clash');
   recording = null; // stop listening while saving
   el.classList.remove('is-recording');
   const saved = await save({ [field]: value });
@@ -480,15 +536,21 @@ addEventListener(
   true,
 );
 
+// While a box is listening: right, middle and side buttons count anywhere in the
+// window; a left click counts inside the box and cancels outside it.
 addEventListener(
   'mousedown',
   (e) => {
     if (!recording) return;
     const onRecorder = e.target.closest('.recorder') === recording.el;
-    if (!onRecorder) return stopRecording();
+    if (!onRecorder && e.button === 0) return stopRecording();
     e.preventDefault();
     e.stopPropagation();
-    if (recording.field !== 'shortcut') commit(recording.field, fromMouse(e));
+    if (recording.field === 'shortcut') {
+      if (!onRecorder) stopRecording(); // the start shortcut is keys only
+      return;
+    }
+    commit(recording.field, fromMouse(e));
   },
   true,
 );
@@ -503,7 +565,13 @@ for (const type of ['mouseup', 'auxclick', 'contextmenu']) {
 
 // ---------- boot
 
+let shownTheme = null;
+
 function render() {
+  if (state.settings.theme !== shownTheme) {
+    applyTheme(state.settings.theme, shownTheme !== null); // fade only on a change, not on open
+    shownTheme = state.settings.theme;
+  }
   renderColors();
   renderSettings();
 }
