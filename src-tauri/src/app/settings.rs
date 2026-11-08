@@ -44,8 +44,6 @@ pub struct Settings {
     pub notify: bool,
     pub history_size: usize,
     pub format: usize,
-    /// Keep the picker window ready so it opens right away.
-    pub instant_picker: bool,
     pub start_with_computer: bool,
     pub pick_on_launch: bool,
     /// Off: quit once nothing is open (with pick_on_launch, that's "quick pick").
@@ -67,7 +65,6 @@ impl Default for Settings {
             notify: true,
             history_size: 10,
             format: 0,
-            instant_picker: true,
             start_with_computer: false,
             pick_on_launch: false,
             close_to_tray: true,

@@ -23,7 +23,6 @@ export const DEFAULTS = {
   theme: 'system',
   notify: true,
   historySize: 10,
-  instantPicker: true,
   startWithComputer: false,
   pickOnLaunch: false,
   closeToTray: true,

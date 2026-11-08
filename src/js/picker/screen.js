@@ -50,15 +50,6 @@ export async function load(buffer) {
   return { x: x / scale, y: y / scale };
 }
 
-/** Frees the screenshot once the picker is hidden (a big screen is many megabytes). */
-export function unload() {
-  shot.bitmap?.close();
-  Object.assign(shot, { loaded: false, data: null, bitmap: null });
-  canvas.width = 1;
-  canvas.height = 1;
-  dirty = [];
-}
-
 // ------------------------------------------------------------
 // Pixels
 // ------------------------------------------------------------

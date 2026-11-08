@@ -16,7 +16,7 @@ use tauri::{AppHandle, Manager, RunEvent};
 
 use app::{commands, settings, updates};
 use system::{shortcut, startup, tray};
-use ui::{main_window, picker_window};
+use ui::main_window;
 
 fn main() {
     let app = tauri::Builder::default()
@@ -94,9 +94,6 @@ fn open_on_start(app: &AppHandle) {
         _ if at_login => {}
         _ => picker::launch(app),
     }
-
-    // Instant picker: get the picker window ready in the background.
-    picker_window::sync_async(app);
 
     // A login start waits a minute so it doesn't slow down logging in. Quick pick
     // checks right away, since the app only lives for one pick.

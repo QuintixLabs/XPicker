@@ -18,18 +18,13 @@ export const mouse = { x: 0, y: 0 };
 let keys = {};
 let formatIndex = 0;
 let lastCycle = 0;
-let done = false;     // one pick, cancel or open per session
+let done = false;     // one pick, cancel or open per picker
 let armed = null;     // mouse button pressed down, acted on when released
-let onDone = () => {};
 
-/** Ready for a new pick with these keys. `finished` runs once the picker is done. */
-export function prepare(settings, finished) {
+/** Sets up your keys and the format you used last. */
+export function prepare(settings) {
   keys = settings;
   formatIndex = Math.min(settings.format, FORMATS.length - 1);
-  lastCycle = 0;
-  done = false;
-  armed = null;
-  onDone = finished;
 }
 
 export const currentFormat = () => formatIndex;
@@ -41,8 +36,7 @@ export const currentFormat = () => formatIndex;
 async function finish(command, args) {
   if (done) return;
   done = true;
-  await invoke(command, args);
-  onDone();
+  invoke(command, args);
 }
 
 function pick() {

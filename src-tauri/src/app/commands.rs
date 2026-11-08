@@ -17,7 +17,7 @@ use crate::{
     },
     picker::{self, clipboard::Clipboard, Frame},
     system::{shortcut, startup},
-    ui::{main_window, picker_window},
+    ui::main_window,
 };
 
 // ------------------------------------------------------------
@@ -44,13 +44,7 @@ pub async fn save_settings(app: AppHandle, store: State<'_, Store>, settings: Se
     if settings.theme != previous.theme {
         main_window::apply_theme(&app, &settings.theme);
     }
-    let picker_changed = settings.instant_picker != previous.instant_picker || settings.close_to_tray != previous.close_to_tray;
-
-    let data = store.update(&app, |data| data.settings = settings);
-    if picker_changed {
-        picker_window::sync(&app);
-    }
-    Ok(data)
+    Ok(store.update(&app, |data| data.settings = settings))
 }
 
 #[tauri::command]
@@ -83,7 +77,7 @@ pub async fn start_pick(app: AppHandle) {
 }
 
 /// The screenshot for the picker, handed over once to free memory.
-/// Empty when nothing is waiting (a ready window that isn't picking yet).
+/// Empty when nothing is waiting.
 #[tauri::command]
 pub async fn frame(frame: State<'_, Frame>) -> Result<Response, String> {
     Ok(Response::new(frame.data.lock().unwrap().take().unwrap_or_default()))
