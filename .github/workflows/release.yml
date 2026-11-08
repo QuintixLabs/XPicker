@@ -142,7 +142,7 @@ jobs:
                 lines="$(grep -iE "^$2$rest" <<<"$commits" | sed -E "s/^$2$rest *//I; s/^./\U&/; s/^/- /" || true)"
                 if [ -n "$lines" ]; then printf '## %s\n%s\n\n' "$1" "$lines"; fi
               }
-              section "🪐 New features" feat
+              section "🌈 New features" feat
               section "🐛 Fixes" fix
               section "📚 Docs" docs
               section "♻️ Refactors" refactor
