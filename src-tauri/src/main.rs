@@ -15,12 +15,12 @@ use std::time::Duration;
 use tauri::{AppHandle, Manager, RunEvent};
 
 use app::{commands, settings, updates};
-use system::{shortcut, startup, tray};
+use system::{notifications, shortcut, startup, tray};
 use ui::main_window;
 
 fn main() {
     let app = tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| picker::launch(app)))
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| picker::launch(app, false)))
         .plugin(shortcut::plugin())
         .plugin(startup::plugin())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -38,6 +38,7 @@ fn main() {
             let shortcut = store.get().settings.shortcut;
             app.manage(store);
 
+            notifications::register(handle);
             tray::create(handle)?;
             if let Err(err) = shortcut::apply(handle, &shortcut) {
                 eprintln!("XPicker: couldn't register {shortcut}: {err}");
@@ -49,6 +50,7 @@ fn main() {
             commands::state,
             commands::frame,
             commands::ready,
+            commands::move_cursor,
             commands::dismiss,
             commands::start_pick,
             commands::open_from_picker,
@@ -92,13 +94,12 @@ fn open_on_start(app: &AppHandle) {
         Some(mode) if mode == "manual" => main_window::open_async(app),
         // Login start: quietly in the tray.
         _ if at_login => {}
-        _ => picker::launch(app),
+        _ => picker::launch(app, true),
     }
 
-    // A login start waits a minute so it doesn't slow down logging in. Quick pick
-    // checks right away, since the app only lives for one pick.
-    let settings = app.state::<settings::Store>().get().settings;
-    let quick_pick = settings.pick_on_launch && !settings.close_to_tray;
-    let delay = if at_login { 60 } else if quick_pick { 0 } else { 10 };
+    // A login start waits a minute so it doesn't slow down logging in. A quick
+    // pick (or Close to tray off) checks right away, since the app may only live
+    // for one pick.
+    let delay = if at_login { 60 } else if !picker::stays_in_tray(app) { 0 } else { 10 };
     updates::start_auto(app, Duration::from_secs(delay));
 }

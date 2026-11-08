@@ -6,11 +6,22 @@
 
 import { FORMATS } from '../shared/color-formats.js';
 import { fromKey, fromMouse } from '../shared/bindings.js';
-import { pixelAt, pixelUnder, request, shot } from './screen.js';
+import { LINUX, pixelAt, pixelUnder, request, shot } from './screen.js';
 
 const { invoke } = window.__TAURI__.core;
 
 const CYCLE_MS = 240; // how fast the format changes while the key is held
+
+// Arrow keys move one pixel, with Shift ten. A key you've bound to an action
+// in Settings does that action instead.
+const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+const BIG_STEP = 10;
+
+// Linux can't move the real cursor, so arrows only move XPicker's crosshair.
+// How far they moved it is kept, so the mouse carries on from there instead of
+// jumping back to the real cursor.
+let real = null;              // where the real cursor is, in css px
+let offset = { x: 0, y: 0 };  // crosshair minus real cursor
 
 /** Where the mouse is, in css px. */
 export const mouse = { x: 0, y: 0 };
@@ -25,6 +36,8 @@ let armed = null;     // mouse button pressed down, acted on when released
 export function prepare(settings) {
   keys = settings;
   formatIndex = Math.min(settings.format, FORMATS.length - 1);
+  real = { ...mouse };
+  offset = { x: 0, y: 0 };
 }
 
 export const currentFormat = () => formatIndex;
@@ -70,11 +83,42 @@ function handle(binding, e) {
   action();
 }
 
+/** Moves the picked spot by whole screen pixels, and the mouse cursor with it. */
+function nudge([dx, dy], step) {
+  const here = pixelUnder(mouse);
+  const x = Math.min(Math.max(here.x + dx * step, 0), shot.width - 1);
+  const y = Math.min(Math.max(here.y + dy * step, 0), shot.height - 1);
+  mouse.x = (x + 0.5) / shot.scale;
+  mouse.y = (y + 0.5) / shot.scale;
+  if (LINUX) offset = { x: mouse.x - real.x, y: mouse.y - real.y };
+  else invoke('move_cursor', { x, y });
+  request();
+}
+
+/** The real cursor moved: on Linux keep the arrows' offset, shrinking it at the screen edges. */
+function follow(x, y) {
+  real = { x, y };
+  const maxX = shot.cssWidth - 0.001;
+  const maxY = shot.cssHeight - 0.001;
+  mouse.x = Math.min(Math.max(x + offset.x, 0), maxX);
+  mouse.y = Math.min(Math.max(y + offset.y, 0), maxY);
+  // Pushed against an edge: what didn't fit comes off the offset, so every
+  // pixel stays reachable with the mouse.
+  offset = { x: mouse.x - x, y: mouse.y - y };
+}
+
 // ------------------------------------------------------------
 // Keyboard and mouse
 // ------------------------------------------------------------
 
-addEventListener('keydown', (e) => handle(fromKey(e), e));
+addEventListener('keydown', (e) => {
+  const binding = fromKey(e);
+  if (actionFor(binding, e)) return handle(binding, e);
+  if (ARROWS[e.code] && shot.loaded && !done) {
+    e.preventDefault();
+    nudge(ARROWS[e.code], e.shiftKey ? BIG_STEP : 1);
+  }
+});
 
 // Mouse buttons act on release: if the picker closed on press, the release
 // would land on the app underneath (a right-click there opens its menu).
@@ -105,8 +149,7 @@ function ensureFocus() {
 const moveEvent = 'onpointerrawupdate' in window ? 'pointerrawupdate' : 'pointermove';
 addEventListener(moveEvent, (e) => {
   if (!shot.loaded || done) return;
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
+  follow(e.clientX, e.clientY);
   ensureFocus();
   request();
 });

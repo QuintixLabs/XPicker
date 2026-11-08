@@ -95,6 +95,14 @@ pub async fn ready(window: WebviewWindow) {
     let _ = webview.set_focus();
 }
 
+/// Arrow keys in the picker: puts the mouse cursor on screen pixel `x, y` of
+/// the picker. Not on Linux: Wayland doesn't let apps move the cursor, and
+/// XPicker draws its own crosshair there anyway.
+#[tauri::command]
+pub async fn move_cursor(window: WebviewWindow, x: i32, y: i32) {
+    let _ = window.set_cursor_position(tauri::PhysicalPosition::new(x, y));
+}
+
 #[tauri::command]
 pub async fn pick(app: AppHandle, value: String, hex: String, format: usize) -> Result<(), String> {
     picker::finish(&app, &value, &hex, format)
