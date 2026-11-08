@@ -18,7 +18,7 @@ const root = document.documentElement;
 export function show(page) {
   stopRecording();
   status();
-  document.body.classList.toggle('is-welcome', page === 'welcome');
+  root.classList.toggle('is-welcome', page === 'welcome');
   $$('.view').forEach((el) => (el.hidden = el.id !== page));
   $$('[data-tab]').forEach((tab) => tab.classList.toggle('is-active', tab.dataset.tab === page));
   $('main').scrollTop = 0;

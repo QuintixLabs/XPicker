@@ -3,8 +3,10 @@
    The welcome screen: its three steps, the dots, and Back / Next.
    ============================================================ */
 
+/* No room kept for a scrollbar here, or everything sits 5px left of center. */
 main:has(.welcome:not([hidden])) {
   display: flex;
+  scrollbar-gutter: auto;
 }
 
 .welcome {

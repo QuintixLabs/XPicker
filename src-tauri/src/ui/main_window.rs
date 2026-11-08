@@ -80,8 +80,12 @@ fn open_on(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
         return window.set_focus();
     }
 
+    // Told before the page draws anything, so the welcome screen never
+    // shows the sidebar for a moment first.
+    let settings = app.state::<Store>().get().settings;
+    let page = if settings.show_welcome { Some("welcome") } else { page };
     let start = page.map(|p| format!("window.__START_PAGE__ = {p:?};")).unwrap_or_default();
-    let theme = window_theme(&app.state::<Store>().get().settings.theme);
+    let theme = window_theme(&settings.theme);
     let background = if theme == Some(Theme::Light) { Color(246, 246, 247, 255) } else { Color(11, 11, 12, 255) };
     let window = builder(app, LABEL, "index.html")
         .initialization_script(&start)

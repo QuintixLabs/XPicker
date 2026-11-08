@@ -1,7 +1,7 @@
 // ============================================================
 // boot.js
 // Sets the theme and the sidebar before the window first appears,
-// so it never flashes the wrong one.
+// so it never flashes the wrong one. The welcome screen has no sidebar.
 // ============================================================
 
 // Loaded as a plain script in <head>, before anything is drawn.
@@ -14,5 +14,8 @@ try {
 
   if (localStorage.getItem('xpicker.sidebarCollapsed') === '1') {
     root.classList.add('is-collapsed');
+  }
+  if (window.__START_PAGE__ === 'welcome') {
+    root.classList.add('is-welcome');
   }
 } catch {}
