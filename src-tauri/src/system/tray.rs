@@ -93,9 +93,11 @@ fn menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     let data = app.state::<Store>().get();
     let shortcut = data.settings.shortcut;
 
-    // The shortcut shows on the right of the item. If the system can't display
-    // that key combination, the item is shown without it.
-    let pick = MenuItem::with_id(app, "pick", "Pick color", true, Some(shortcut.as_str()))
+    // The shortcut shows on the right of the item. Windows menus can't show the
+    // Windows key (the app would crash), so then the item is shown without it.
+    let win_key = shortcut.split('+').any(|key| matches!(key, "Super" | "Meta" | "Command" | "Cmd"));
+    let shown = if cfg!(windows) && win_key { None } else { Some(shortcut.as_str()) };
+    let pick = MenuItem::with_id(app, "pick", "Pick color", true, shown)
         .or_else(|_| MenuItem::with_id(app, "pick", "Pick color", true, None::<&str>))?;
 
     let recent = Submenu::with_id(app, "recent", "Recent colors", !data.history.is_empty())?;
