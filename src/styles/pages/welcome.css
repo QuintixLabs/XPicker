@@ -23,7 +23,8 @@ main:has(.welcome:not([hidden])) {
   height: 436px;
 }
 
-/* The first step is its own centered screen. */
+/* The first step is its own centered screen. Going to the next step, the
+   buttons glide down to their place instead of jumping (see welcome.js). */
 .welcome.is-intro {
   align-self: center;
   padding-bottom: 40px; /* a little above the middle looks centered */
@@ -42,7 +43,6 @@ main:has(.welcome:not([hidden])) {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  animation: fade 220ms ease-out;
 }
 
 .step[hidden] {
@@ -122,6 +122,12 @@ main:has(.welcome:not([hidden])) {
 .step-actions .btn {
   width: 160px;
   height: 42px;
+}
+
+/* No Back on the hello step. It shows or hides while the buttons are faded
+   out (see welcome.js), so nothing visibly jumps. */
+.welcome.is-intro #back {
+  display: none;
 }
 
 .dots {
