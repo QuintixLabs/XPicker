@@ -71,6 +71,8 @@ fn window(app: &AppHandle) -> Option<WebviewWindow> {
 }
 
 fn open_on(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
+    // You're using XPicker now, so a quick pick no longer quits after.
+    crate::picker::end_quick_pick(app);
     if let Some(window) = window(app) {
         if let Some(page) = page {
             let _ = window.emit("navigate", page);

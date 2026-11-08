@@ -43,6 +43,9 @@ pub struct Frame {
     starting: AtomicBool,
     /// A pick is wrapping up (copy + notification); don't quit yet.
     finishing: AtomicBool,
+    /// Quick pick: XPicker was opened just for one pick (Pick on launch), so it
+    /// quits after it, even with Close to tray on.
+    quick: AtomicBool,
 }
 
 impl Frame {
@@ -55,14 +58,30 @@ impl Frame {
 // Starting
 // ------------------------------------------------------------
 
-/// XPicker opened by you (first launch or opened again): picker or main window, per settings.
-pub fn launch(app: &AppHandle) {
+/// XPicker opened by you: picker or main window, per settings. `first_start` is
+/// false when it was already running (in the tray) and you opened it again.
+pub fn launch(app: &AppHandle, first_start: bool) {
     let settings = app.state::<Store>().get().settings;
     if !settings.show_welcome && settings.pick_on_launch {
+        // Only a fresh start is a quick pick; one already in the tray stays there.
+        if first_start {
+            app.state::<Frame>().quick.store(true, Ordering::Release);
+        }
         start(app);
     } else {
         main_window::open_async(app);
     }
+}
+
+/// A quick pick only lasts while it's just the picker: once you open the
+/// XPicker window, it behaves like a normal start again.
+pub fn end_quick_pick(app: &AppHandle) {
+    app.state::<Frame>().quick.store(false, Ordering::Release);
+}
+
+/// Whether XPicker should stay in the tray when nothing is open.
+pub fn stays_in_tray(app: &AppHandle) -> bool {
+    app.state::<Store>().get().settings.close_to_tray && !app.state::<Frame>().quick.load(Ordering::Acquire)
 }
 
 /// Safe to call from any thread or callback.
@@ -134,7 +153,7 @@ pub fn finish(app: &AppHandle, value: &str, hex: &str, format: usize) -> Result<
     }
 
     frame.finishing.store(false, Ordering::Release);
-    // Quick pick: the app stayed up only for the notification; quit now.
+    // Quick pick (or Close to tray off): the app stayed up only for the notification; quit now.
     if !keep_running(app) && app.webview_windows().is_empty() {
         app.exit(0);
     }
@@ -161,12 +180,13 @@ fn restore_main(app: &AppHandle) {
     }
 }
 
-/// Asked when the last window closes. Stays alive in the tray unless
-/// "Close to tray" is off; never quits halfway through a pick or an update.
+/// Asked when the last window closes. Stays alive in the tray unless "Close to
+/// tray" is off or this is a quick pick; never quits halfway through a pick or
+/// an update.
 pub fn keep_running(app: &AppHandle) -> bool {
     let frame = app.state::<Frame>();
     frame.is_starting()
         || frame.finishing.load(Ordering::Acquire)
         || app.state::<updates::Pending>().is_busy()
-        || app.state::<Store>().get().settings.close_to_tray
+        || stays_in_tray(app)
 }

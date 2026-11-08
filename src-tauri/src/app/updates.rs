@@ -8,8 +8,9 @@
 // Automatic:  while XPicker is open, at most every 6 hours. Downloads quietly,
 //             then installs only when XPicker isn't being used (no picker, no
 //             window), or as it closes.
-// Quick pick: checks right at launch; if the download is still going after the
-//             pick, the app stays up invisibly to finish and install, then quits.
+// Quick pick: (Pick on launch, or Close to tray off) checks right at launch; if
+//             the download is still going after the pick, the app stays up
+//             invisibly to finish and install, then quits.
 // Every update is signed; the app refuses anything that isn't. Windows installs
 // in "quiet" mode, so no installer window ever shows.
 
@@ -196,7 +197,7 @@ fn install_when_idle(app: &AppHandle) {
         if is_idle(app) {
             let ready = app.state::<Pending>().ready.lock().unwrap().take();
             if let Some((update, bytes)) = ready {
-                let mode = if app.state::<Store>().get().settings.close_to_tray { "background" } else { "exit" };
+                let mode = if picker::stays_in_tray(app) { "background" } else { "exit" };
                 match apply(app, update, &bytes, mode) {
                     // Installed without reopening (quick pick, macOS/Linux): quit like it would have.
                     Ok(()) if mode == "exit" => app.exit(0),
