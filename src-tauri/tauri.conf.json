@@ -18,6 +18,7 @@
     "active": true,
     "targets": ["nsis", "dmg", "app", "appimage", "deb", "rpm"],
     "createUpdaterArtifacts": true,
+    "licenseFile": "../LICENSE",
     "publisher": "Quintix Labs",
     "copyright": "Copyright © Quintix Labs",
     "shortDescription": "Lightweight screen color picker",
@@ -27,7 +28,13 @@
       "icons/app/128x128@2x.png",
       "icons/app/icon.icns",
       "icons/app/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/app/icon.ico",
+        "sidebarImage": "icons/installer/sidebar.bmp"
+      }
+    }
   },
   "plugins": {
     "updater": {
