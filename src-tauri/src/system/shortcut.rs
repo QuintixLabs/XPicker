@@ -4,15 +4,18 @@
 // works from anywhere on your computer.
 // ============================================================
 
-use tauri::{plugin::TauriPlugin, AppHandle, Wry};
+use tauri::{plugin::TauriPlugin, AppHandle, Manager, Wry};
 use tauri_plugin_global_shortcut::{Builder, GlobalShortcutExt, ShortcutState};
 
-use crate::picker;
+use crate::{app::settings::Store, picker};
 
 pub fn plugin() -> TauriPlugin<Wry> {
     Builder::new()
         .with_handler(|app, _shortcut, event| {
-            if event.state() == ShortcutState::Pressed {
+            // Does nothing until the welcome screen is finished, so you set
+            // up your keys first.
+            let welcome = app.state::<Store>().get().settings.show_welcome;
+            if event.state() == ShortcutState::Pressed && !welcome {
                 picker::start(app);
             }
         })
