@@ -1,0 +1,100 @@
+/* ============================================================
+   reset.css
+   Makes the windows feel like an app: no text selection, focus
+   rings only for the keyboard, plain buttons, key caps.
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+::selection {
+  background: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  cursor: default;
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+img {
+  pointer-events: none;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------
+   Focus: a quiet ring, only when using the keyboard (Tab)
+   ------------------------------------------------------------ */
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------
+   Key caps (Ctrl, Shift, X…)
+   ------------------------------------------------------------ */
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--raised);
+  color: var(--text);
+  font: 500 12px/1 var(--font);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------
+   Shared animations
+   ------------------------------------------------------------ */
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

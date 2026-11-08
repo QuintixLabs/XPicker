@@ -1,0 +1,72 @@
+/* ============================================================
+   theme.css
+   The colors for dark and light, and the font. Change these to
+   restyle the whole app.
+   ============================================================ */
+
+@font-face {
+  font-family: "Outfit";
+  src: url("../../assets/fonts/Outfit.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+/* ------------------------------------------------------------
+   Dark (the default)
+   ------------------------------------------------------------ */
+
+:root {
+  --bg: #0b0b0c;
+  --surface: #131315;
+  --raised: #1b1b1e;
+  --line: #222225;
+  --line-strong: #323236;
+  --text: #f4f4f5;
+  --muted: #8f8f96;
+  --faint: #5c5c63;
+  --accent: #00bfff;
+  --danger: #e5484d;
+  --warning: #f5a524;
+  --hover: rgba(255, 255, 255, 0.03);
+  --focus: rgba(255, 255, 255, 0.2);
+  --backdrop: rgba(0, 0, 0, 0.55);
+
+  --font: "Outfit", system-ui, sans-serif;
+  --radius: 10px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root:not([data-theme="light"]) {
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------
+   Light (set by boot.js and theme.js)
+   ------------------------------------------------------------ */
+
+:root[data-theme="light"] {
+  --bg: #f6f6f7;
+  --surface: #ffffff;
+  --raised: #ececee;
+  --line: #e4e4e7;
+  --line-strong: #d1d1d6;
+  --text: #18181b;
+  --muted: #6b6b74;
+  --faint: #9b9ba3;
+  --warning: #c27803;
+  --hover: rgba(0, 0, 0, 0.04);
+  --focus: rgba(0, 0, 0, 0.2);
+  --backdrop: rgba(0, 0, 0, 0.3);
+  color-scheme: light;
+}
+
+/* The normal logo's X is white; on light backgrounds use the dark-X one. */
+:root[data-theme="light"] img.logo {
+  content: url("../../assets/logos/logo-light.svg");
+}
+
+/* A short fade when switching themes, instead of a hard flash. */
+:root.theme-changing * {
+  transition: background-color 200ms, border-color 200ms, color 200ms !important;
+}

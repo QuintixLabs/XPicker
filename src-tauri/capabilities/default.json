@@ -1,6 +1,6 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "windows": ["main", "overlay-*"],
+  "windows": ["main", "picker-*"],
   "permissions": ["core:default"]
 }

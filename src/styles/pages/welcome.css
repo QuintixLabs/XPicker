@@ -1,0 +1,143 @@
+/* ============================================================
+   welcome.css
+   The welcome screen: its three steps, the dots, and Back / Next.
+   ============================================================ */
+
+main:has(.welcome:not([hidden])) {
+  display: flex;
+}
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* The key steps share one fixed height, so the buttons and dots never move
+   between them. */
+.stage {
+  height: 436px;
+}
+
+/* The first step is its own centered screen. */
+.welcome.is-intro {
+  align-self: center;
+  padding-bottom: 40px; /* a little above the middle looks centered */
+}
+
+.welcome.is-intro .stage {
+  height: auto;
+}
+
+/* ------------------------------------------------------------
+   A step: icon, title, text, then its content
+   ------------------------------------------------------------ */
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: fade 220ms ease-out;
+}
+
+.step[hidden] {
+  display: none;
+}
+
+.step[data-step="0"] {
+  padding-bottom: 24px;
+}
+
+.step-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+}
+
+.step-icon img {
+  width: 56px;
+  height: 56px;
+}
+
+.step[data-step="0"] .step-icon,
+.step[data-step="0"] .step-icon img {
+  width: 88px;
+  height: 88px;
+}
+
+.step-icon.badge {
+  background: rgba(0, 191, 255, 0.12);
+  color: var(--accent);
+}
+
+.step-icon .icon {
+  width: 26px;
+  height: 26px;
+}
+
+.welcome h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  min-height: 22px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.step-body {
+  width: 100%;
+  margin-top: 22px;
+  text-align: left;
+}
+
+.welcome .status {
+  margin-top: 10px;
+}
+
+/* ------------------------------------------------------------
+   Back / Next and the dots
+   ------------------------------------------------------------ */
+
+.step-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.step-actions .btn {
+  width: 160px;
+  height: 42px;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 24px;
+}
+
+.dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line-strong);
+  transition: width 240ms var(--ease), background 240ms;
+}
+
+.dots .is-active {
+  width: 18px;
+  background: var(--accent);
+}

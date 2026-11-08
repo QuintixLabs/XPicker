@@ -31,14 +31,30 @@ XPicker keeps running in the tray after you close its window. Quit it from the t
 
 ## Where things are
 
+**The windows** (`src/`)
+
 | Path | What |
 |---|---|
-| `src/index.html`, `app.js` | Main window: welcome, colors, settings |
-| `src/overlay.js` | The picker (frozen screenshot + loupe) |
-| `src/styles/theme.css` | Colors, font and shared styles |
-| `src-tauri/src/` | Rust: capture, clipboard, shortcut, windows, notifications, updates |
+| `index.html`, `picker.html` | The main window and the picker |
+| `js/app/` | The main window: `pages/` (welcome, colors, settings) and `components/` (sidebar, theme, key boxes, update bar, dialog) |
+| `js/picker/` | The picker: screenshot, loupe, hint bar, keys and mouse |
+| `js/shared/` | Used by both: color formats, key names, app feel |
+| `styles/` | `base/` (colors, font, icons, layout), `components/`, `pages/`, matching the JS |
+| `assets/` | Fonts, icons and logos |
 
-Notifications are real system notifications (`src-tauri/src/notify.rs`). In a dev build on Windows they show under PowerShell's name, since Windows only knows XPicker's own name once it's installed.
+**The app** (`src-tauri/src/`)
+
+| Path | What |
+|---|---|
+| `main.rs` | Starts XPicker |
+| `app/` | Commands from the windows, the settings file, updates |
+| `picker/` | Screenshot, clipboard, color formats, the pick itself |
+| `ui/` | The main window, the picker window, which logo to show |
+| `system/` | Tray, notifications, the global shortcut, start with computer |
+
+Every file starts with a short note saying what it does.
+
+Notifications are real system notifications (`system/notifications.rs`). In a dev build on Windows they show under PowerShell's name, since Windows only knows XPicker's own name once it's installed.
 
 ## Make a build
 

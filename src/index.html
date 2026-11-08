@@ -3,16 +3,25 @@
   <head>
     <meta charset="utf-8" />
     <title>XPicker</title>
-    <link rel="stylesheet" href="styles/theme.css" />
-    <link rel="stylesheet" href="styles/app.css" />
-    <script src="lib/boot.js"></script>
-    <script type="module" src="app.js"></script>
+    <link rel="stylesheet" href="styles/base/theme.css" />
+    <link rel="stylesheet" href="styles/base/reset.css" />
+    <link rel="stylesheet" href="styles/base/icons.css" />
+    <link rel="stylesheet" href="styles/base/layout.css" />
+    <link rel="stylesheet" href="styles/components/buttons.css" />
+    <link rel="stylesheet" href="styles/components/controls.css" />
+    <link rel="stylesheet" href="styles/components/sidebar.css" />
+    <link rel="stylesheet" href="styles/components/update-bar.css" />
+    <link rel="stylesheet" href="styles/components/dialog.css" />
+    <link rel="stylesheet" href="styles/pages/welcome.css" />
+    <link rel="stylesheet" href="styles/pages/colors.css" />
+    <link rel="stylesheet" href="styles/pages/settings.css" />
+    <script src="js/shared/boot.js"></script>
+    <script type="module" src="js/app/app.js"></script>
   </head>
   <body>
-    <!-- Sidebar: add a page by adding a nav button + a matching <section> -->
     <aside class="sidebar">
       <div class="brand">
-        <img class="logo" src="assets/logo.svg" alt="" />
+        <img class="logo" src="assets/logos/logo.svg" alt="" />
         <span class="label-text">XPicker</span>
         <button id="sidebar-toggle" class="sidebar-toggle">
           <i class="icon icon-panel-close"></i>
@@ -30,7 +39,6 @@
     </aside>
 
     <main>
-      <!-- Shown only when an update is downloaded while this window is open. -->
       <div id="update-bar" class="update-bar-wrap">
         <div class="update-bar-inner">
           <div class="update-bar">
@@ -42,12 +50,10 @@
         </div>
       </div>
 
-      <!-- First launch: intro → keys → done. Every step shares one layout
-           (icon, title, text, body) and the buttons/dots never move. -->
       <section id="welcome" class="view welcome" hidden>
         <div class="stage">
           <div class="step" data-step="0">
-            <div class="step-icon"><img class="logo" src="assets/logo.svg" alt="" /></div>
+            <div class="step-icon"><img class="logo" src="assets/logos/logo.svg" alt="" /></div>
             <h1>Welcome to XPicker</h1>
             <p class="lead">Pick any color on your screen and copy it in the format you need.</p>
           </div>
@@ -91,7 +97,6 @@
             </div>
           </div>
 
-          <!-- Same rows, same order as the step before, just read-only. -->
           <div class="step" data-step="2" hidden>
             <div class="step-icon badge"><i class="icon icon-check"></i></div>
             <h1>You're all set</h1>
@@ -138,7 +143,6 @@
         <div class="dots"><span></span><span></span><span></span></div>
       </section>
 
-      <!-- Recent colors -->
       <section id="colors" class="view" hidden>
         <header class="page-head">
           <h2>Colors</h2>
@@ -150,7 +154,6 @@
         <ol id="history" class="history"></ol>
       </section>
 
-      <!-- Settings -->
       <section id="settings" class="view" hidden>
         <header class="page-head">
           <h2>Settings</h2>
@@ -178,6 +181,13 @@
               <div class="row-hint">How many colors to keep in your list</div>
             </div>
             <div class="segmented" data-field="historySize" data-options="5:5,10:10,20:20"></div>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Instant picker</div>
+              <div class="row-hint">Keep the picker ready so it opens right away. Uses a bit more memory.</div>
+            </div>
+            <button class="toggle" role="switch" data-field="instantPicker"></button>
           </div>
         </div>
 
@@ -264,8 +274,6 @@
             </div>
             <button id="update" class="btn btn-muted update" data-state="idle">
               <span class="update-content">
-                <!-- loading.svg's shape; it turns with CSS (.update-spinner), since its own
-                     SVG animation stops and starts unreliably when the icon is hidden and shown. -->
                 <svg class="update-spinner" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 3c4.97 0 9 4.03 9 9"/><path d="M12 3c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9c0 -4.97 4.03 -9 9 -9Z" opacity="0.3"/></g></svg>
                 <i class="icon icon-check update-done"></i>
                 <span class="update-text">Check for updates</span>

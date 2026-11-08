@@ -1,0 +1,17 @@
+/* ============================================================
+   picker.css
+   The picker window: the screenshot fills the screen. The loupe
+   and the hint bar are drawn by js/picker/.
+   ============================================================ */
+
+body {
+  background: #000;
+  cursor: crosshair; /* the system crosshair, like the original XPicker */
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}

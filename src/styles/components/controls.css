@@ -1,0 +1,179 @@
+/* ============================================================
+   controls.css
+   Setting rows and the things in them: on/off switches, choice
+   buttons, and the key boxes.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Rows
+   ------------------------------------------------------------ */
+
+.group {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 62px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row-title {
+  font-weight: 500;
+}
+
+.row-hint {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ------------------------------------------------------------
+   On/off switch
+   ------------------------------------------------------------ */
+
+.toggle {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transition: background 150ms;
+}
+
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 180ms var(--ease);
+}
+
+.toggle[aria-checked="true"] {
+  background: var(--accent);
+}
+
+.toggle[aria-checked="true"]::after {
+  transform: translateX(16px);
+}
+
+/* ------------------------------------------------------------
+   Choice buttons (HEX/RGB…, 5/10/20, the theme icons)
+   ------------------------------------------------------------ */
+
+.segmented {
+  display: inline-flex;
+  flex: none;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+}
+
+.segmented button {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.segmented button:hover {
+  color: var(--text);
+}
+
+.segmented .is-active {
+  background: var(--raised);
+  color: var(--text);
+}
+
+.segmented-icons button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  padding: 0;
+}
+
+.segmented-icons .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ------------------------------------------------------------
+   Key boxes
+   ------------------------------------------------------------ */
+
+.caps {
+  display: inline-flex;
+  gap: 4px;
+}
+
+/* Sized to its keys, no empty space. */
+.recorder {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 5px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+  transition: border-color 120ms, box-shadow 120ms;
+}
+
+.recorder:hover {
+  border-color: var(--faint);
+}
+
+.recorder.is-recording {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.16);
+}
+
+/* "Press a key or click…" */
+.hint {
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* A key that's already used: "Used by Copy color" inside the box. */
+.recorder.is-recording.is-clash {
+  border-color: var(--warning);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--warning) 18%, transparent);
+}
+
+.recorder.is-clash .hint {
+  color: var(--warning);
+}
+
+/* The other box using that key glows for a moment, so you see where. */
+.recorder.is-flash {
+  border-color: var(--warning);
+  transition: border-color 120ms;
+}
+
+/* Read-only keys, the same size as a key box so rows line up. */
+.caps-box {
+  align-items: center;
+  height: 36px;
+  padding: 0 5px;
+  border: 1px solid transparent;
+}

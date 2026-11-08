@@ -2,7 +2,7 @@
   "name": "xpicker",
   "version": "1.0.9",
   "private": true,
-  "description": "Lightweight screen color picker",
+  "description": "Lightweight, simple, and easy-to-use screen color picker",
   "license": "GPL-3.0",
   "scripts": {
     "tauri": "tauri",

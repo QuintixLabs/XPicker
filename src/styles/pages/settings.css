@@ -1,0 +1,114 @@
+/* ============================================================
+   settings.css
+   The Settings page: the Check for updates button, the buttons at
+   the bottom, and the Quintix footer.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Check for updates
+   ------------------------------------------------------------ */
+
+/* Fixed width, so it doesn't change size between "Checking…" and "You're up to date". */
+.update {
+  width: 190px;
+}
+
+.update[data-state="checking"],
+.update[data-state="updating"] {
+  pointer-events: none;
+}
+
+.update-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 140ms;
+}
+
+.update-content.is-swapping {
+  opacity: 0;
+}
+
+.update .update-text {
+  line-height: 1;
+}
+
+/* Spinner while checking or updating, a check mark when up to date. */
+.update-spinner,
+.update-done {
+  display: none;
+  flex: none;
+  width: 15px;
+  height: 15px;
+}
+
+.update[data-state="checking"] .update-spinner,
+.update[data-state="updating"] .update-spinner {
+  display: block;
+  animation: spin 1.5s linear infinite; /* loading.svg's own speed */
+}
+
+.update[data-state="latest"] .update-done {
+  display: block;
+  color: var(--accent);
+}
+
+.update[data-state="error"] {
+  color: var(--danger);
+}
+
+/* ------------------------------------------------------------
+   The bottom: settings folder and reset
+   ------------------------------------------------------------ */
+
+.footer-status {
+  margin-top: 16px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px -10px 0;
+}
+
+/* ------------------------------------------------------------
+   Quintix footer
+   ------------------------------------------------------------ */
+
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+
+/* Same 30px height as the link icons, text nudged onto their middle. */
+.about {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.about .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.about span {
+  line-height: 1;
+  transform: translateY(1px);
+}
+
+.footer-links {
+  display: flex;
+  gap: 2px;
+}

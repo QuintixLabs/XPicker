@@ -58,7 +58,8 @@ jobs:
 
           download="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$tag"
           previous="$(git tag --list 'v[0-9]*' --sort=-v:refname | sed -n 1p)"
-          {
+          # The downloads table, placed after the list of changes.
+          downloads() {
             cat <<EOF
           ## 📥 Downloads
 
@@ -93,9 +94,12 @@ jobs:
           Already have XPicker? Update from inside the app: **Settings → Updates → Check for updates**.
 
           EOF
+          }
 
+          {
             if [ -z "$previous" ]; then
-              echo "First release of XPicker."
+              printf 'First release of XPicker.\n\n'
+              downloads
             else
               # The commit that changes the version means nothing to users.
               commits="$(git log --no-merges --invert-grep --grep='^chore: release ' --pretty='%s' "$previous..HEAD")"
@@ -119,6 +123,8 @@ jobs:
               # Anything else keeps its whole message, since there is no heading to say what it is.
               other="$(grep -iEv "^(feat|fix|docs|refactor|test|chore)$rest" <<<"$commits" | sed 's/^/- /' || true)"
               if [ -n "$other" ]; then printf '## 📝 Other\n%s\n\n' "$other"; fi
+
+              downloads
 
               echo "## Contributors"
               gh api --paginate "repos/$GITHUB_REPOSITORY/compare/$previous...$GITHUB_SHA" \

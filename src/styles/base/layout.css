@@ -1,0 +1,108 @@
+/* ============================================================
+   layout.css
+   The main window's frame: sidebar on the left, pages on the
+   right, page and section titles.
+   ============================================================ */
+
+body {
+  display: flex;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ------------------------------------------------------------
+   The page area
+   ------------------------------------------------------------ */
+
+main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  /* Space for the scrollbar is always kept, so pages with and without one
+     are the same width and nothing shifts when switching. */
+  scrollbar-gutter: stable;
+  padding: 26px 32px 32px;
+}
+
+main::-webkit-scrollbar {
+  width: 10px;
+}
+
+main::-webkit-scrollbar-thumb {
+  border: 3px solid var(--bg);
+  border-radius: 10px;
+  background: var(--line-strong);
+}
+
+/* ------------------------------------------------------------
+   Titles
+   ------------------------------------------------------------ */
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 32px;
+  margin-bottom: 20px;
+}
+
+.page-head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.section {
+  margin: 28px 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.page-head + .section {
+  margin-top: 0;
+}
+
+/* A section title with a small button on the same line ("Shortcuts … Reset"). */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 28px 0 10px;
+}
+
+.section-head .section {
+  margin: 0;
+}
+
+/* ------------------------------------------------------------
+   Small text
+   ------------------------------------------------------------ */
+
+.label {
+  margin: 24px 0 8px;
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.note {
+  margin: 10px 2px 0;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.status {
+  min-height: 18px;
+  margin: 0;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.status.is-error {
+  color: var(--danger);
+}

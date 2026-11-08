@@ -1,0 +1,115 @@
+/* ============================================================
+   buttons.css
+   All the buttons: blue, grey, red, plain text, and small icon
+   buttons.
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 120ms, color 120ms;
+}
+
+/* ------------------------------------------------------------
+   Kinds
+   ------------------------------------------------------------ */
+
+/* Blue: the main action (Pick color, Next). */
+.btn-accent {
+  background: var(--accent);
+  color: #00131c;
+  font-weight: 600;
+}
+
+.btn-accent:hover {
+  background: #3dcfff;
+}
+
+/* Grey: solid like the blue one, just quieter (Back, Cancel, Restart). */
+.btn-muted {
+  background: var(--raised);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.btn-muted:hover {
+  background: var(--line-strong);
+}
+
+/* Red: actions that delete or reset. */
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-danger:hover {
+  background: #ef5f63;
+}
+
+/* Plain text (Clear all, Reset, Later). */
+.btn-ghost {
+  height: 30px;
+  padding: 0 10px;
+  color: var(--muted);
+}
+
+.btn-ghost:hover {
+  background: var(--raised);
+  color: var(--text);
+}
+
+.btn-ghost .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ------------------------------------------------------------
+   Sizes
+   ------------------------------------------------------------ */
+
+.btn-sm {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.btn-xs {
+  height: 24px;
+  margin-right: -8px; /* the text lines up with the box below it */
+  padding: 0 8px;
+  font-size: 13px;
+}
+
+/* ------------------------------------------------------------
+   Icon only (the footer links)
+   ------------------------------------------------------------ */
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  color: var(--faint);
+  transition: background 120ms, color 120ms;
+}
+
+.icon-btn:hover {
+  background: var(--raised);
+  color: var(--text);
+}
+
+.icon-btn .icon {
+  width: 16px;
+  height: 16px;
+}

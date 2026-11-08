@@ -1,0 +1,61 @@
+/* ============================================================
+   dialog.css
+   The "Are you sure?" box (Clear all, Reset), with its fade in
+   and out.
+   ============================================================ */
+
+.dialog {
+  width: min(440px, calc(100vw - 40px));
+  padding: 26px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.dialog:focus {
+  outline: none;
+}
+
+.dialog::backdrop {
+  background: var(--backdrop);
+}
+
+/* Fades in on open and out on close (see components/dialog.js). */
+.dialog[open],
+.dialog[open]::backdrop {
+  animation: fade 160ms ease-out;
+}
+
+.dialog.is-closing,
+.dialog.is-closing::backdrop {
+  animation: fade-out 140ms ease-in forwards;
+}
+
+/* ------------------------------------------------------------
+   Inside
+   ------------------------------------------------------------ */
+
+.dialog-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.dialog-text {
+  margin: 8px 0 24px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dialog-actions .btn {
+  height: 38px;
+  padding: 0 18px;
+}
