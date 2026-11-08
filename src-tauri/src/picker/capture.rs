@@ -6,10 +6,14 @@
 use tauri::{Monitor, PhysicalPosition};
 use xcap::Monitor as Screen;
 
-/// What the picker receives: five little-endian numbers
-/// [width, height, cursor x, cursor y, screen scale × 1000], then the pixels (RGBA).
+/// What the picker receives: nine little-endian numbers, then the pixels (RGBA):
+/// [width, height, cursor x, cursor y, screen scale × 1000,
+///  taskbar room on the left, top, right, bottom].
 /// The scale lets the picker size itself right away, even while its window is
-/// still being moved to this screen.
+/// still being moved to this screen. The taskbar room keeps the hint bar clear
+/// of taskbars and docks. Everything is in screenshot pixels.
+pub const HEADER: usize = 36;
+
 pub fn grab(monitor: &Monitor, cursor: PhysicalPosition<f64>) -> Result<Vec<u8>, String> {
     let pos = monitor.position();
     let size = monitor.size();
@@ -29,8 +33,22 @@ pub fn grab(monitor: &Monitor, cursor: PhysicalPosition<f64>) -> Result<Vec<u8>,
     // Screenshot pixels per window pixel.
     let scale = width as f64 / (size.width as f64 / monitor.scale_factor());
 
-    let mut out = Vec::with_capacity(20 + image.as_raw().len());
-    for v in [width as i32, height as i32, x as i32, y as i32, (scale * 1000.0).round() as i32] {
+    // The part of the screen not taken by taskbars, as room left on each edge.
+    let free = monitor.work_area();
+    let (sx, sy) = (width as f64 / size.width as f64, height as f64 / size.height as f64);
+    // Some systems don't report it (empty), and no taskbar takes more than a
+    // third of the screen; either way, fall back to no room.
+    let known = free.size.width > 0 && free.size.height > 0;
+    let room = |v: i64, s: f64, max: u32| {
+        if known && v > 0 && v < max as i64 / 3 { (v as f64 * s).round() as i32 } else { 0 }
+    };
+    let left = room(free.position.x as i64 - pos.x as i64, sx, size.width);
+    let top = room(free.position.y as i64 - pos.y as i64, sy, size.height);
+    let right = room((pos.x as i64 + size.width as i64) - (free.position.x as i64 + free.size.width as i64), sx, size.width);
+    let bottom = room((pos.y as i64 + size.height as i64) - (free.position.y as i64 + free.size.height as i64), sy, size.height);
+
+    let mut out = Vec::with_capacity(HEADER + image.as_raw().len());
+    for v in [width as i32, height as i32, x as i32, y as i32, (scale * 1000.0).round() as i32, left, top, right, bottom] {
         out.extend_from_slice(&v.to_le_bytes());
     }
     out.extend_from_slice(image.as_raw());
