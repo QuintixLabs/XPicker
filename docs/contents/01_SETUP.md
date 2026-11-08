@@ -52,9 +52,6 @@ To see the welcome screen again, set `"showWelcome": true`. Deleting the file re
 ## If something goes wrong
 
 Rust errors show in the terminal running `npm run dev`. For the windows, press `Ctrl+Shift+I` in a dev build to open the developer tools. Put what you find in your issue.
-
-In a dev build on Windows, notifications show up as coming from PowerShell. That's normal: Windows only knows XPicker's name once it's installed.
-
 ---
 
 #### [02. Committing ➔](/docs/contents/02_COMMITING.md)

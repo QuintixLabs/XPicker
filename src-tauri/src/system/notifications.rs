@@ -55,14 +55,22 @@ fn show(app: &AppHandle, title: &str, body: &str, image: Option<PathBuf>, transi
     });
 }
 
-/// Windows only shows notifications for apps it knows. Installed XPicker is
-/// registered by the installer; a dev build borrows PowerShell's id instead.
 fn app_id(app: &AppHandle) -> String {
-    if cfg!(debug_assertions) {
-        "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\\WindowsPowerShell\\v1.0\\powershell.exe".into()
-    } else {
-        app.config().identifier.clone()
+    app.config().identifier.clone()
+}
+
+/// Windows only shows notifications from apps it knows, and silently drops the
+/// rest. The installer's Start menu shortcut introduces XPicker, but that's
+/// missing in a dev build, a copy run without installing, or after the shortcut
+/// is removed. So XPicker introduces itself at every start: its name and icon,
+/// under the current user. The uninstaller removes it again (see hooks.nsh).
+pub fn register(app: &AppHandle) {
+    #[cfg(windows)]
+    if let Err(err) = platform::register(app, &app_id(app)) {
+        eprintln!("XPicker: couldn't register for notifications: {err}");
     }
+    #[cfg(not(windows))]
+    let _ = app;
 }
 
 #[cfg(windows)]
@@ -102,6 +110,39 @@ mod platform {
 
     fn escape(text: &str) -> String {
         text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
+    }
+
+    /// The icon notifications show next to "XPicker".
+    const ICON: &[u8] = include_bytes!("../../icons/app/128x128.png");
+
+    pub fn register(app: &AppHandle, app_id: &str) -> Result<(), String> {
+        use windows::{
+            core::HSTRING,
+            Win32::System::Registry::{RegSetKeyValueW, HKEY_CURRENT_USER, REG_SZ},
+        };
+
+        let icon = app.path().cache_dir().map_err(|e| e.to_string())?.join("XPicker").join("icon.png");
+        if !icon.exists() {
+            std::fs::create_dir_all(icon.parent().unwrap()).map_err(|e| e.to_string())?;
+            std::fs::write(&icon, ICON).map_err(|e| e.to_string())?;
+        }
+
+        let key = HSTRING::from(format!("Software\\Classes\\AppUserModelId\\{app_id}"));
+        for (name, value) in [("DisplayName", app.package_info().name.clone()), ("IconUri", icon.to_string_lossy().into_owned())] {
+            let data: Vec<u16> = value.encode_utf16().chain([0]).collect();
+            let result = unsafe {
+                RegSetKeyValueW(
+                    HKEY_CURRENT_USER,
+                    &key,
+                    &HSTRING::from(name),
+                    REG_SZ.0,
+                    Some(data.as_ptr().cast()),
+                    (data.len() * 2) as u32,
+                )
+            };
+            result.ok().map_err(|e| e.to_string())?;
+        }
+        Ok(())
     }
 }
 
