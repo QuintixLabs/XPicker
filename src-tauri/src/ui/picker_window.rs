@@ -39,7 +39,14 @@ pub fn open(app: &AppHandle, monitor: &Monitor) -> tauri::Result<()> {
         .build()
         .and_then(|window| {
             window.set_position(*monitor.position())?;
-            window.set_size(*monitor.size())
+            window.set_size(*monitor.size())?;
+            // Linux panels stay above normal windows (and some desktops shrink
+            // windows to fit beside them), so there the picker goes fullscreen
+            // to cover the whole screen, panels included.
+            if cfg!(target_os = "linux") {
+                window.set_fullscreen(true)?;
+            }
+            Ok(())
         })
 }
 

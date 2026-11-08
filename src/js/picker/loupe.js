@@ -4,8 +4,13 @@
 // bar underneath with the value.
 // ============================================================
 
+// On Linux the screenshot is often drawn by the CPU, so redrawing it while the
+// mouse moves makes the loupe lag behind (and a fast flick lands the cursor on
+// it). There the loupe is its own small layer that just moves. Windows and
+// macOS draw the screenshot fast, so there it's drawn straight onto it.
+
 import { FORMATS, isLight } from '../shared/color-formats.js';
-import { ctx, markDirty, roundRect, shot } from './screen.js';
+import { LINUX, ctx, markDirty, moveLayer, roundRect, shot, sizeLayer, snap } from './screen.js';
 
 export const FONT = 'Outfit, system-ui, sans-serif';
 
@@ -20,6 +25,19 @@ const EDGE = 8;     // closest it gets to the screen edge
 const SIZE = GRID * CELL;
 const WIDTH = SIZE + BORDER * 2;
 const HEIGHT = SIZE + BAR + BORDER * 2;
+// Room around it for the shadow: 4px left and right, 1px above, 13px below.
+const PAD = { left: 4, top: 1, right: 4, bottom: 13 };
+
+const LAYERED = LINUX;
+const layer = document.getElementById('loupe');
+let layerCtx = null;
+
+/** Called once the screenshot is loaded. */
+export function prepare() {
+  if (!LAYERED) return;
+  layerCtx = sizeLayer(layer, PAD.left + WIDTH + PAD.right, PAD.top + HEIGHT + PAD.bottom);
+  layer.hidden = false;
+}
 
 /** Bottom-right of the cursor; flips left or up when it would leave the screen. */
 export function place(cursor) {
@@ -30,74 +48,95 @@ export function place(cursor) {
   if (top + HEIGHT > h - EDGE) top = cursor.y - OFFSET - HEIGHT;
   left = Math.min(Math.max(left, EDGE), w - WIDTH - EDGE);
   top = Math.min(Math.max(top, EDGE), h - HEIGHT - EDGE);
-  return { left, top, rect: { x: left - 4, y: top - 1, w: WIDTH + 8, h: HEIGHT + 13 } };
+  const rect = { x: left - PAD.left, y: top - PAD.top, w: PAD.left + WIDTH + PAD.right, h: PAD.top + HEIGHT + PAD.bottom };
+  if (LAYERED) {
+    // The layer sits on whole screen pixels, so it stays sharp at any scaling.
+    rect.x = snap(rect.x);
+    rect.y = snap(rect.y);
+  }
+  return { left, top, rect };
 }
 
 /** Draws the loupe at `left, top` around screenshot pixel `px, py`. */
-export function draw({ left, top }, px, py, color, formatIndex) {
+export function draw({ left, top, rect }, px, py, color, formatIndex) {
+  let g = ctx;
+  if (LAYERED) {
+    // Draw into the small layer (its own top left at 0, 0), then just move it.
+    g = layerCtx;
+    g.save();
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.clearRect(0, 0, layer.width, layer.height);
+    g.restore();
+    left = PAD.left;
+    top = PAD.top;
+  }
+  drawAt(g, left, top, px, py, color, formatIndex);
+  if (LAYERED) moveLayer(layer, rect.x, rect.y);
+  else markDirty(rect.x, rect.y, rect.w, rect.h);
+}
+
+function drawAt(g, left, top, px, py, color, formatIndex) {
   const gx = left + BORDER;
   const gy = top + BORDER;
 
   // Soft shadow, then the white frame.
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.14)';
-  roundRect(left - 3, top + 3, WIDTH + 6, HEIGHT + 8, RADIUS + 3);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
-  roundRect(left - 1, top + 1, WIDTH + 2, HEIGHT + 3, RADIUS + 1);
-  ctx.fill();
-  ctx.fillStyle = '#fff';
-  roundRect(left, top, WIDTH, HEIGHT, RADIUS);
-  ctx.fill();
+  g.globalAlpha = 1;
+  g.fillStyle = 'rgba(0, 0, 0, 0.14)';
+  roundRect(left - 3, top + 3, WIDTH + 6, HEIGHT + 8, RADIUS + 3, g);
+  g.fill();
+  g.fillStyle = 'rgba(0, 0, 0, 0.22)';
+  roundRect(left - 1, top + 1, WIDTH + 2, HEIGHT + 3, RADIUS + 1, g);
+  g.fill();
+  g.fillStyle = '#fff';
+  roundRect(left, top, WIDTH, HEIGHT, RADIUS, g);
+  g.fill();
 
-  ctx.save();
-  roundRect(gx, gy, SIZE, SIZE + BAR, RADIUS - BORDER);
-  ctx.clip();
+  g.save();
+  roundRect(gx, gy, SIZE, SIZE + BAR, RADIUS - BORDER, g);
+  g.clip();
 
   // The zoomed pixels: one sharp (not blurred) copy of the area around the cursor.
-  ctx.fillStyle = '#000';
-  ctx.fillRect(gx, gy, SIZE, SIZE);
+  g.fillStyle = '#000';
+  g.fillRect(gx, gy, SIZE, SIZE);
   const sx = px - (GRID >> 1);
   const sy = py - (GRID >> 1);
   const x0 = Math.max(0, sx);
   const y0 = Math.max(0, sy);
   const x1 = Math.min(shot.width, sx + GRID);
   const y1 = Math.min(shot.height, sy + GRID);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(shot.bitmap, x0, y0, x1 - x0, y1 - y0, gx + (x0 - sx) * CELL, gy + (y0 - sy) * CELL, (x1 - x0) * CELL, (y1 - y0) * CELL);
+  g.imageSmoothingEnabled = false;
+  g.drawImage(shot.bitmap, x0, y0, x1 - x0, y1 - y0, gx + (x0 - sx) * CELL, gy + (y0 - sy) * CELL, (x1 - x0) * CELL, (y1 - y0) * CELL);
 
   // Faint pixel grid.
-  ctx.beginPath();
+  g.beginPath();
   for (let i = 1; i < GRID; i++) {
-    ctx.moveTo(gx + i * CELL, gy);
-    ctx.lineTo(gx + i * CELL, gy + SIZE);
-    ctx.moveTo(gx, gy + i * CELL);
-    ctx.lineTo(gx + SIZE, gy + i * CELL);
+    g.moveTo(gx + i * CELL, gy);
+    g.lineTo(gx + i * CELL, gy + SIZE);
+    g.moveTo(gx, gy + i * CELL);
+    g.lineTo(gx + SIZE, gy + i * CELL);
   }
-  ctx.strokeStyle = 'rgba(128, 128, 128, 0.14)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  g.strokeStyle = 'rgba(128, 128, 128, 0.14)';
+  g.lineWidth = 1;
+  g.stroke();
 
   // Black and white frame around the picked pixel, so it shows on any color.
   const at = (GRID >> 1) * CELL;
-  ctx.strokeStyle = '#000';
-  ctx.strokeRect(gx + at - 0.5, gy + at - 0.5, CELL + 1, CELL + 1);
-  ctx.strokeStyle = '#fff';
-  ctx.strokeRect(gx + at + 0.5, gy + at + 0.5, CELL - 1, CELL - 1);
+  g.strokeStyle = '#000';
+  g.strokeRect(gx + at - 0.5, gy + at - 0.5, CELL + 1, CELL + 1);
+  g.strokeStyle = '#fff';
+  g.strokeRect(gx + at + 0.5, gy + at + 0.5, CELL - 1, CELL - 1);
 
   // Color bar with the value.
-  ctx.fillStyle = `#${color.hex}`;
-  ctx.fillRect(gx, gy + SIZE, SIZE, BAR);
-  ctx.fillStyle = isLight(color) ? '#000' : '#fff';
-  ctx.font = `600 13px ${FONT}`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(FORMATS[formatIndex].format(color), gx + SIZE / 2, gy + SIZE + BAR / 2 + 1, SIZE - 12);
-  ctx.restore();
+  g.fillStyle = `#${color.hex}`;
+  g.fillRect(gx, gy + SIZE, SIZE, BAR);
+  g.fillStyle = isLight(color) ? '#000' : '#fff';
+  g.font = `600 13px ${FONT}`;
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText(FORMATS[formatIndex].format(color), gx + SIZE / 2, gy + SIZE + BAR / 2 + 1, SIZE - 12);
+  g.restore();
 
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.45)';
-  roundRect(left - 0.5, top - 0.5, WIDTH + 1, HEIGHT + 1, RADIUS + 0.5);
-  ctx.stroke();
-
-  markDirty(left - 4, top - 1, WIDTH + 8, HEIGHT + 13);
+  g.strokeStyle = 'rgba(0, 0, 0, 0.45)';
+  roundRect(left - 0.5, top - 0.5, WIDTH + 1, HEIGHT + 1, RADIUS + 0.5, g);
+  g.stroke();
 }

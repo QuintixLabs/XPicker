@@ -8,6 +8,7 @@ import '../shared/native.js';
 import * as screen from './screen.js';
 import * as loupe from './loupe.js';
 import * as hints from './hints.js';
+import * as crosshair from './crosshair.js';
 import * as controls from './controls.js';
 
 const { invoke } = window.__TAURI__.core;
@@ -22,11 +23,9 @@ function paint() {
   const cursor = { x: (px + 0.5) / screen.shot.scale, y: (py + 0.5) / screen.shot.scale };
   const spot = loupe.place(cursor);
 
-  const fading = hints.draw(spot.rect, cursor);
+  hints.update(spot.rect, cursor);
   loupe.draw(spot, px, py, screen.pixelAt(px, py), controls.currentFormat());
-
-  // Keep drawing until the hint bar has finished fading, even if the mouse stops.
-  if (fading) requestAnimationFrame(screen.request);
+  crosshair.draw(px, py); // Linux only: moves in the same frame as the loupe
 }
 
 screen.setPainter(paint);
@@ -38,13 +37,15 @@ screen.setPainter(paint);
 async function begin() {
   const [raw, state] = await Promise.all([invoke('frame'), invoke('state'), document.fonts.load(`600 13px ${loupe.FONT}`)]);
   const buffer = raw instanceof ArrayBuffer ? raw : Uint8Array.from(raw).buffer;
-  if (buffer.byteLength <= 20) return; // no screenshot waiting
+  if (buffer.byteLength <= screen.HEADER) return; // no screenshot waiting
 
   const cursor = await screen.load(buffer);
   controls.mouse.x = cursor.x;
   controls.mouse.y = cursor.y;
   controls.prepare(state.settings);
   hints.prepare(state.settings);
+  loupe.prepare();
+  crosshair.prepare();
 
   screen.request();
   await invoke('ready');

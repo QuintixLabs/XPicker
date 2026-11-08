@@ -1,19 +1,33 @@
 // ============================================================
 // screen.js
-// The screenshot under the picker: holds it, reads its pixels, and
-// redraws only the parts that changed each frame.
+// The screenshot under the picker: shows it, reads its pixels, and
+// the small layers drawn on top of it (hint bar, Linux loupe).
 // ============================================================
 
 import { rgb } from '../shared/color-formats.js';
 
 const MIN_FRAME_MS = 4; // draw cap (~250 fps), plenty for high refresh monitors
 
-export const canvas = document.getElementById('canvas');
-// "desynchronized" is the low-latency drawing mode, so the loupe keeps up with the mouse.
+/**
+ * Linux hears about mouse moves a frame or so after the cursor moved, so
+ * anything drawn next to the cursor trails it. There the loupe is its own
+ * layer and XPicker draws its own crosshair (see loupe.js, crosshair.js).
+ */
+export const LINUX = /Linux/.test(navigator.userAgent);
+
+export const canvas = document.getElementById('screen');
+// "desynchronized" is the low-latency drawing mode, so a loupe drawn on the
+// screenshot (Windows, macOS) keeps up with the mouse.
 export const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
 
-/** The current screenshot. Sizes in screenshot pixels, plus the window size in css px. */
-export const shot = { loaded: false, data: null, width: 0, height: 0, scale: 1, cssWidth: 0, cssHeight: 0, bitmap: null };
+/**
+ * The current screenshot. Sizes in screenshot pixels, plus the window size in
+ * css px and `room`: how much of each edge taskbars take, in css px.
+ */
+export const shot = { loaded: false, data: null, width: 0, height: 0, scale: 1, cssWidth: 0, cssHeight: 0, room: null, bitmap: null };
+
+/** Size of the numbers in front of the pixels (see capture.rs). */
+export const HEADER = 36;
 
 let dirty = []; // screenshot-pixel areas drawn over last frame
 
@@ -22,12 +36,13 @@ let dirty = []; // screenshot-pixel areas drawn over last frame
 // ------------------------------------------------------------
 
 /**
- * Loads a screenshot from the app: five numbers [width, height, cursor x,
- * cursor y, scale × 1000], then the pixels. Returns the cursor in css px.
+ * Loads a screenshot from the app: nine numbers [width, height, cursor x,
+ * cursor y, scale × 1000, taskbar room left, top, right, bottom], then the
+ * pixels. Returns the cursor in css px.
  */
 export async function load(buffer) {
-  const [width, height, x, y, scale1000] = new Int32Array(buffer, 0, 5);
-  const data = new Uint8ClampedArray(buffer, 20);
+  const [width, height, x, y, scale1000, left, top, right, bottom] = new Int32Array(buffer, 0, 9);
+  const data = new Uint8ClampedArray(buffer, HEADER);
   const image = new ImageData(data, width, height);
 
   canvas.width = width;
@@ -44,6 +59,7 @@ export async function load(buffer) {
     scale,
     cssWidth: width / scale,
     cssHeight: height / scale,
+    room: { left: left / scale, top: top / scale, right: right / scale, bottom: bottom / scale },
     bitmap: await createImageBitmap(image),
   });
   dirty = [];
@@ -60,16 +76,46 @@ export function pixelAt(x, y) {
   return rgb(shot.data[i], shot.data[i + 1], shot.data[i + 2]);
 }
 
-/** The screenshot pixel under a point in css px. */
+/**
+ * The screenshot pixel under a point in css px. The tiny extra keeps a point
+ * sitting exactly on a pixel's edge (like 2.9999… for 3) on that pixel.
+ */
 export function pixelUnder(point) {
   return {
-    x: Math.min(Math.floor(point.x * shot.scale), shot.width - 1),
-    y: Math.min(Math.floor(point.y * shot.scale), shot.height - 1),
+    x: Math.min(Math.floor(point.x * shot.scale + 1e-6), shot.width - 1),
+    y: Math.min(Math.floor(point.y * shot.scale + 1e-6), shot.height - 1),
   };
 }
 
 // ------------------------------------------------------------
-// Drawing only what changed
+// Layers: small canvases on top of the screenshot
+// ------------------------------------------------------------
+
+/**
+ * Gives a layer room for `w` × `h` css px, sharp on this screen. Returns its
+ * context, ready to draw in css px with (0, 0) at the layer's top left.
+ */
+export function sizeLayer(layer, w, h) {
+  const s = shot.scale;
+  layer.width = Math.ceil(w * s);
+  layer.height = Math.ceil(h * s);
+  layer.style.width = `${layer.width / s}px`;
+  layer.style.height = `${layer.height / s}px`;
+  const g = layer.getContext('2d');
+  g.setTransform(s, 0, 0, s, 0, 0);
+  return g;
+}
+
+/** Rounds a css position to whole screen pixels, so layers stay sharp. */
+export const snap = (v) => Math.round(v * shot.scale) / shot.scale;
+
+/** Moves a layer to `x, y` (css px). Only moves it on screen, nothing gets redrawn. */
+export function moveLayer(layer, x, y) {
+  layer.style.transform = `translate(${x}px, ${y}px)`;
+}
+
+// ------------------------------------------------------------
+// Drawing on the screenshot: only what changed
 // ------------------------------------------------------------
 
 /** Remembers an area (css px) drawn this frame, to put the screenshot back there next frame. */
@@ -86,9 +132,10 @@ function restore({ x, y, w, h }) {
   if (x1 > x0 && y1 > y0) ctx.drawImage(shot.bitmap, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0);
 }
 
-export function roundRect(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, h, r);
+/** A rounded rectangle path on `g` (the screenshot's context unless given). */
+export function roundRect(x, y, w, h, r, g = ctx) {
+  g.beginPath();
+  g.roundRect(x, y, w, h, r);
 }
 
 // ------------------------------------------------------------
