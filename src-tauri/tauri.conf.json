@@ -40,7 +40,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDYwOEEzMzBGMDIxRUNEQ0IKUldUTHpSNENEek9LWUVYYnI5eDJGeVROZUViRFRzSkhpd0h6Qk5Tcnh4N1hhc2l0R1pYZGNoZ24K",
       "endpoints": [
-        "https://github.com/QuintixLabs/XPicker-Testing/releases/latest/download/latest.json"
+        "https://github.com/QuintixLabs/XPicker/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "quiet"
