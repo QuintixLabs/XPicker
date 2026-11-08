@@ -1,5 +1,5 @@
-# Makes a DRAFT GitHub Release for the version in package.json, with notes
-# built from the commits, then builds Windows, macOS and Linux into it.
+# When the version in package.json changes on main, makes a DRAFT GitHub Release
+# for it, with notes built from the commits, then builds Windows, macOS and Linux into it.
 # Nothing reaches users until you click "Publish release", which also creates the tag.
 # See docs/contents/03_RELEASING.md.
 #
@@ -21,7 +21,36 @@ permissions:
   contents: write
 
 jobs:
+  # package.json also changes for other reasons (description, dependencies), so
+  # only go on when the version itself changed. "Run workflow" always goes on.
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Did the version change?
+        id: check
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          version_at() { git show "$1:package.json" 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version" 2>/dev/null; }
+          now="$(version_at HEAD)"
+          before="$(version_at "$BEFORE" || true)"
+          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$now" != "$before" ]; then
+            echo "Releasing $now (was ${before:-nothing})"
+            echo "changed=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "The version is still $now, so no release."
+            echo "changed=false" >>"$GITHUB_OUTPUT"
+          fi
+
   draft:
+    needs: version
+    if: needs.version.outputs.changed == 'true'
     runs-on: ubuntu-latest
     outputs:
       release-id: ${{ steps.draft.outputs.release-id }}

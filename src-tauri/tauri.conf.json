@@ -21,7 +21,7 @@
     "licenseFile": "../LICENSE",
     "publisher": "Quintix Labs",
     "copyright": "Copyright © Quintix Labs",
-    "shortDescription": "Lightweight screen color picker",
+    "shortDescription": "Lightweight, simple, and easy-to-use screen color picker",
     "icon": [
       "icons/app/32x32.png",
       "icons/app/128x128.png",
