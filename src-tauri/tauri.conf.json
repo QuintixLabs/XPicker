@@ -32,7 +32,11 @@
     "windows": {
       "nsis": {
         "installerIcon": "icons/app/icon.ico",
-        "sidebarImage": "icons/installer/sidebar.bmp"
+        "uninstallerIcon": "icons/app/icon.ico",
+        "sidebarImage": "icons/installer/sidebar.bmp",
+        "installerHooks": "installer/hooks.nsh",
+        "languages": ["English"],
+        "customLanguageFiles": { "English": "installer/English.nsh" }
       }
     }
   },
