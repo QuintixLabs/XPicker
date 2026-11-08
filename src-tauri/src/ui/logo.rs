@@ -8,7 +8,21 @@
 // Fixed icons (installer, Start menu, notifications) can't swap, so they use
 // the outlined logo from src-tauri/icons instead.
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{image::Image, Theme, WebviewWindow};
+
+/// The last light/dark seen by taskbar_is_light(), kept current by the tray.
+static LIGHT: AtomicBool = AtomicBool::new(false);
+
+pub fn remember_light(light: bool) {
+    LIGHT.store(light, Ordering::Relaxed);
+}
+
+/// Linux: whether the desktop is light, as last checked. The windows can't
+/// always see it change themselves there (see ui/mod.rs).
+pub fn system_is_light() -> bool {
+    LIGHT.load(Ordering::Relaxed)
+}
 
 const WINDOW: &[u8] = include_bytes!("../../icons/runtime/logo.png");
 const WINDOW_LIGHT: &[u8] = include_bytes!("../../icons/runtime/logo-light.png");

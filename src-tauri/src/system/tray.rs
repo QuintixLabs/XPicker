@@ -18,7 +18,7 @@ use tauri::{
     image::Image,
     menu::{IconMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Manager,
+    AppHandle, Emitter, Manager,
 };
 
 use crate::{
@@ -48,20 +48,28 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
         tray = tray.icon(icon);
     }
     tray.build(app)?;
+    logo::remember_light(light);
     watch_taskbar(app, light);
     Ok(())
 }
 
-/// Swaps the tray logo when the taskbar switches between light and dark.
+/// Swaps the tray logo when the taskbar switches between light and dark. On
+/// Linux that's the desktop's theme, and the windows don't always hear about it
+/// themselves, so they get told too ("system-theme").
 fn watch_taskbar(app: &AppHandle, mut light: bool) {
     let app = app.clone();
+    let every = std::time::Duration::from_secs(if cfg!(target_os = "linux") { 2 } else { 5 });
     std::thread::spawn(move || loop {
-        std::thread::sleep(std::time::Duration::from_secs(5));
+        std::thread::sleep(every);
         let now = logo::taskbar_is_light();
         if now != light {
             light = now;
+            logo::remember_light(light);
             if let (Some(tray), Some(icon)) = (app.tray_by_id(ID), logo::tray_icon(light)) {
                 let _ = tray.set_icon(Some(icon));
+            }
+            if cfg!(target_os = "linux") {
+                let _ = app.emit("system-theme", light);
             }
         }
     });
