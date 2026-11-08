@@ -76,23 +76,8 @@ pub fn set_status(app: &AppHandle, status: Option<&str>) {
     }
 }
 
-fn tooltip(app: &AppHandle) -> String {
-    let shortcut = app.state::<Store>().get().settings.shortcut;
-    if shortcut.is_empty() {
-        "XPicker".into()
-    } else {
-        format!("XPicker · {} to pick", shortcut_label(&shortcut))
-    }
-}
-
-/// "Ctrl+Shift+KeyX" → "Ctrl+Shift+X"
-fn shortcut_label(shortcut: &str) -> String {
-    shortcut
-        .split('+')
-        .map(|part| part.strip_prefix("Key").or_else(|| part.strip_prefix("Digit")).unwrap_or(part))
-        .map(|part| if part == "Super" { if cfg!(target_os = "macos") { "Cmd" } else { "Win" } } else { part })
-        .collect::<Vec<_>>()
-        .join("+")
+fn tooltip(_app: &AppHandle) -> String {
+    "XPicker".into()
 }
 
 fn menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {

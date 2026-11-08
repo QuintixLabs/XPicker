@@ -188,7 +188,7 @@ $('#back').addEventListener('click', () => goStep(step - 1));
 
 $('#next').addEventListener('click', async () => {
   if (step < NEXT_LABELS.length - 1) return goStep(step + 1);
-  if (await save({ onboarded: true })) show('colors');
+  if (await save({ showWelcome: false })) show('colors');
 });
 
 $('#pick').addEventListener('click', () => invoke('start_pick'));
@@ -340,10 +340,7 @@ $('#reset-shortcuts').addEventListener('click', async () => {
   if (ok) save(Object.fromEntries(SHORTCUT_FIELDS.map((f) => [f, DEFAULTS[f]])));
 });
 
-$('#replay').addEventListener('click', () => {
-  show('welcome');
-  goStep(0);
-});
+$('#open-folder').addEventListener('click', () => invoke('open_settings_folder'));
 
 // ---------- updates + footer links
 
@@ -585,7 +582,7 @@ listen('state', (e) => {
 state = await invoke('state');
 render();
 // The tray's "Settings" opens the window straight on that page.
-show(state.settings.onboarded ? (window.__START_PAGE__ ?? 'colors') : 'welcome');
-listen('navigate', (e) => state.settings.onboarded && show(e.payload));
+show(state.settings.showWelcome ? 'welcome' : (window.__START_PAGE__ ?? 'colors'));
+listen('navigate', (e) => !state.settings.showWelcome && show(e.payload));
 goStep(0);
 setInterval(renderColors, 60000); // keep "5m ago" fresh

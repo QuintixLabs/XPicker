@@ -8,7 +8,7 @@ use crate::{
     clipboard::Clipboard,
     picker::{self, Frame},
     shortcut, startup,
-    store::{Data, Settings, Store},
+    store::{self, Data, Settings, Store},
     ui, updates,
 };
 
@@ -115,6 +115,20 @@ pub async fn open_link(app: AppHandle, name: String) -> Result<(), String> {
     use tauri_plugin_opener::OpenerExt;
     let (_, url) = LINKS.iter().find(|(key, _)| *key == name).ok_or("unknown link")?;
     app.opener().open_url(*url, None::<&str>).map_err(|e| e.to_string())
+}
+
+/// Settings → "Open settings folder": shows xpicker.json in the file manager.
+#[tauri::command]
+pub async fn open_settings_folder(app: AppHandle) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    let dir = store::settings_dir(&app);
+    let file = dir.join("xpicker.json");
+    if file.exists() {
+        app.opener().reveal_item_in_dir(&file).map_err(|e| e.to_string())
+    } else {
+        std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        app.opener().open_path(dir.to_string_lossy(), None::<&str>).map_err(|e| e.to_string())
+    }
 }
 
 /// Released while the user records a new shortcut, so the old one doesn't fire.

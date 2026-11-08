@@ -43,6 +43,7 @@ fn main() {
 
             let handle = app.handle();
             let store = store::Store::load(handle);
+            store::remove_old_cache(handle);
             let shortcut = store.get().settings.shortcut;
             app.manage(store);
 
@@ -69,6 +70,7 @@ fn main() {
             commands::install_update,
             commands::pending_update,
             commands::open_link,
+            commands::open_settings_folder,
         ])
         .build(tauri::generate_context!())
         .expect("failed to start XPicker");

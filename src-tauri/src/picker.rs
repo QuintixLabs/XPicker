@@ -38,7 +38,7 @@ const AFTER_PICKER_CLOSES: Duration = Duration::from_millis(300);
 /// App opened by the user (first launch or relaunch): picker or main window, per settings.
 pub fn launch(app: &AppHandle) {
     let settings = app.state::<Store>().get().settings;
-    if settings.onboarded && settings.pick_on_launch {
+    if !settings.show_welcome && settings.pick_on_launch {
         start(app);
     } else {
         ui::open_main_async(app);

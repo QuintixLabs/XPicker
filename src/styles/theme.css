@@ -117,6 +117,7 @@ button {
 .icon-check { --icon: url("../assets/icons/check.svg"); }
 .icon-colors { --icon: url("../assets/icons/colors.svg"); }
 .icon-eraser { --icon: url("../assets/icons/eraser.svg"); }
+.icon-folder { --icon: url("../assets/icons/folder.svg"); }
 .icon-github { --icon: url("../assets/icons/footer/github.svg"); }
 .icon-globe { --icon: url("../assets/icons/footer/globe.svg"); }
 .icon-kofi { --icon: url("../assets/icons/footer/ko-fi.svg"); }

@@ -50,13 +50,15 @@ The installer ends up in `src-tauri/target/release/bundle/`. Signing the update 
 
 ## Your settings while testing
 
-Settings and recent colors are saved in:
+Settings and recent colors are saved in one file, `xpicker.json`. **Settings → Open settings folder** opens it.
 
-- **Windows:** `%APPDATA%\com.quintixlabs.xpicker\xpicker.json`
-- **macOS:** `~/Library/Application Support/com.quintixlabs.xpicker/xpicker.json`
-- **Linux:** `~/.config/com.quintixlabs.xpicker/xpicker.json`
+- **Windows:** `%APPDATA%\XPicker\xpicker.json`
+- **macOS:** `~/Library/Application Support/XPicker/xpicker.json`
+- **Linux:** `~/.config/XPicker/xpicker.json`
 
-Delete the file to start fresh with the welcome screen, or use **Settings → Show welcome screen** to see it again without losing anything.
+To see the welcome screen again, exit XPicker from the tray, set `"showWelcome": true` in the file, and open XPicker. Everything else stays as it was. Deleting the file also brings it back, but resets everything, including your recent colors.
+
+Exit XPicker before editing the file by hand. If it's running, it writes its own copy back the next time it saves.
 
 ## If something goes wrong
 

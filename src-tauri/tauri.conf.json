@@ -18,6 +18,8 @@
     "active": true,
     "targets": ["nsis", "dmg", "app", "appimage", "deb", "rpm"],
     "createUpdaterArtifacts": true,
+    "publisher": "Quintix Labs",
+    "copyright": "Copyright © Quintix Labs",
     "shortDescription": "Lightweight screen color picker",
     "icon": [
       "icons/32x32.png",

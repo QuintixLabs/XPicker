@@ -166,13 +166,32 @@ function drawLoupe(left, top, px, py, color) {
 
 const overlaps = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
-/** The hint bar stays at the bottom unless the loupe actually reaches it. */
-function hintsY(loupe) {
+// Hint bar sizes (css px).
+const HINT_H = 46;
+const HINT_MARGIN = 24;       // from the screen edge
+const HINT_KEY_FONT = `600 12px ${FONT}`;
+const HINT_LABEL_FONT = `500 14px ${FONT}`;
+const HINT_SLIDE = 0.22;      // share of the remaining distance moved per frame
+
+let hintY = null;             // where the bar is drawn now, gliding toward its target
+
+/** The hint bar sits at the bottom unless the loupe actually reaches it; then it goes to the top. */
+function hintsTarget(loupe) {
   const { width, height } = hints;
   const margin = hintsOnTop ? 32 : 12; // a little stickiness so it doesn't flicker
-  const bottom = { x: (innerWidth - width) / 2 - margin, y: innerHeight - 20 - height - margin, w: width + margin * 2, h: height + margin * 2 };
+  const bottom = { x: (innerWidth - width) / 2 - margin, y: innerHeight - HINT_MARGIN - height - margin, w: width + margin * 2, h: height + margin * 2 };
   hintsOnTop = overlaps(bottom, loupe);
-  return hintsOnTop ? 20 : innerHeight - 20 - height;
+  return hintsOnTop ? HINT_MARGIN : innerHeight - HINT_MARGIN - height;
+}
+
+/** Moves the bar a step toward its target. Returns true while it's still moving. */
+function slideHints(target) {
+  if (hintY === null || Math.abs(target - hintY) < 0.5) {
+    hintY = target;
+    return false;
+  }
+  hintY += (target - hintY) * HINT_SLIDE;
+  return true;
 }
 
 function measureHints() {
@@ -182,47 +201,48 @@ function measureHints() {
     [bindingKeys(keys.cancel), 'Cancel'],
     [bindingKeys(keys.open), 'Open XPicker'],
   ].map(([caps, label]) => {
-    ctx.font = `600 11px ${FONT}`;
-    const capWidths = caps.map((c) => ctx.measureText(c).width + 14);
-    ctx.font = `500 13px ${FONT}`;
+    ctx.font = HINT_KEY_FONT;
+    const capWidths = caps.map((c) => ctx.measureText(c).width + 16);
+    ctx.font = HINT_LABEL_FONT;
     const labelWidth = ctx.measureText(label).width;
-    const width = capWidths.reduce((a, b) => a + b + 4, -4) + 7 + labelWidth;
+    const width = capWidths.reduce((a, b) => a + b + 4, -4) + 8 + labelWidth;
     return { caps, capWidths, label, width };
   });
-  const width = items.reduce((a, item) => a + item.width + 20, -20) + 28;
-  return { items, width, height: 38 };
+  const width = items.reduce((a, item) => a + item.width + 24, -24) + 36;
+  return { items, width, height: HINT_H };
 }
 
 function drawHints(y) {
   const { items, width, height } = hints;
   const x = Math.round((innerWidth - width) / 2);
+  y = Math.round(y);
 
   ctx.fillStyle = hintColors.bg;
-  roundRect(x, y, width, height, 10);
+  roundRect(x, y, width, height, 12);
   ctx.fill();
   ctx.strokeStyle = hintColors.border;
   ctx.stroke();
 
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'left';
-  let cursor = x + 14;
+  let cursor = x + 18;
   const mid = y + height / 2 + 1;
   for (const item of items) {
     item.caps.forEach((cap, i) => {
       const w = item.capWidths[i];
       ctx.fillStyle = hintColors.cap;
-      roundRect(cursor, y + 8, w, height - 16, 5);
+      roundRect(cursor, y + 9, w, height - 18, 6);
       ctx.fill();
       ctx.fillStyle = hintColors.key;
-      ctx.font = `600 11px ${FONT}`;
-      ctx.fillText(cap, cursor + 7, mid);
+      ctx.font = HINT_KEY_FONT;
+      ctx.fillText(cap, cursor + 8, mid);
       cursor += w + 4;
     });
-    cursor += 3;
+    cursor += 4;
     ctx.fillStyle = hintColors.label;
-    ctx.font = `500 13px ${FONT}`;
+    ctx.font = HINT_LABEL_FONT;
     ctx.fillText(item.label, cursor, mid);
-    cursor += ctx.measureText(item.label).width + 20;
+    cursor += ctx.measureText(item.label).width + 24;
   }
 
   markDirty(x - 1, y - 1, width + 2, height + 2);
@@ -245,8 +265,12 @@ function draw() {
   const { left, top } = loupePosition(cx, cy);
   const loupe = { x: left - 4, y: top - 1, w: LOUPE_W + 8, h: LOUPE_H + 13 };
 
-  drawHints(hintsY(loupe));
+  const sliding = slideHints(hintsTarget(loupe));
+  drawHints(hintY);
   drawLoupe(left, top, px, py, pixelAt(px, py));
+
+  // Keep drawing until the bar has finished gliding, even if the mouse stops.
+  if (sliding) requestAnimationFrame(request);
 }
 
 /** Draw now if we can, otherwise right after the frame cap. */

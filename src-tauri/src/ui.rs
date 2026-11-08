@@ -3,6 +3,7 @@
 // closing can never clash with its replacement.
 
 use std::{
+    path::PathBuf,
     sync::atomic::{AtomicUsize, Ordering},
     thread,
 };
@@ -21,9 +22,26 @@ pub fn find(app: &AppHandle, kind: &str) -> Option<WebviewWindow> {
     app.webview_windows().into_iter().find(|(l, _)| l.starts_with(&prefix)).map(|(_, w)| w)
 }
 
+/// The window's browser data (sidebar state, theme memory) goes in an "XPicker"
+/// folder too. Every window must use the same one. macOS decides this itself.
+fn browser_data(app: &AppHandle) -> Option<PathBuf> {
+    if cfg!(target_os = "macos") {
+        return None;
+    }
+    app.path().local_data_dir().ok().map(|dir| dir.join("XPicker").join("WebView"))
+}
+
+fn builder<'a>(app: &'a AppHandle, label: impl Into<String>, page: &str) -> WebviewWindowBuilder<'a, tauri::Wry, AppHandle> {
+    let builder = WebviewWindowBuilder::new(app, label, WebviewUrl::App(page.into()));
+    match browser_data(app) {
+        Some(dir) => builder.data_directory(dir),
+        None => builder,
+    }
+}
+
 pub fn create_overlay(app: &AppHandle, monitor: &Monitor) -> tauri::Result<()> {
     let label = format!("{OVERLAY}-{}", NEXT_ID.fetch_add(1, Ordering::Relaxed));
-    let window = WebviewWindowBuilder::new(app, label, WebviewUrl::App("overlay.html".into()))
+    let window = builder(app, label, "overlay.html")
         .title("XPicker")
         .decorations(false)
         .resizable(false)
@@ -84,7 +102,7 @@ fn open(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
     let start = page.map(|p| format!("window.__START_PAGE__ = {p:?};")).unwrap_or_default();
     let theme = window_theme(&app.state::<Store>().get().settings.theme);
     let background = if theme == Some(Theme::Light) { Color(246, 246, 247, 255) } else { Color(11, 11, 12, 255) };
-    let window = WebviewWindowBuilder::new(app, MAIN, WebviewUrl::App("index.html".into()))
+    let window = builder(app, MAIN, "index.html")
         .initialization_script(&start)
         .title("XPicker")
         .inner_size(760.0, 600.0)

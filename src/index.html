@@ -61,28 +61,28 @@
                 <div class="row">
                   <div>
                     <div class="row-title">Start picking</div>
-                    <div class="row-hint">Works from any app</div>
+                    <div class="row-hint">Press this anywhere to pick a color</div>
                   </div>
                   <button class="recorder" data-field="shortcut"></button>
                 </div>
                 <div class="row">
                   <div>
                     <div class="row-title">Copy color</div>
-                    <div class="row-hint">Copies the color under the cursor</div>
+                    <div class="row-hint">Copy the color under your cursor</div>
                   </div>
                   <button class="recorder" data-field="pick"></button>
                 </div>
                 <div class="row">
                   <div>
                     <div class="row-title">Switch format</div>
-                    <div class="row-hint">HEX, RGB, RGBA, HSL, HSLA</div>
+                    <div class="row-hint">Change between HEX, RGB, HSL and more</div>
                   </div>
                   <button class="recorder" data-field="cycle"></button>
                 </div>
                 <div class="row">
                   <div>
                     <div class="row-title">Cancel</div>
-                    <div class="row-hint">Closes the picker</div>
+                    <div class="row-hint">Close the picker without copying</div>
                   </div>
                   <button class="recorder" data-field="cancel"></button>
                 </div>
@@ -101,28 +101,28 @@
                 <div class="row">
                   <div>
                     <div class="row-title">Start picking</div>
-                    <div class="row-hint">Works from any app</div>
+                    <div class="row-hint">Press this anywhere to pick a color</div>
                   </div>
                   <span class="caps caps-box" data-shortcut></span>
                 </div>
                 <div class="row">
                   <div>
                     <div class="row-title">Copy color</div>
-                    <div class="row-hint">Copies the color under the cursor</div>
+                    <div class="row-hint">Copy the color under your cursor</div>
                   </div>
                   <span class="caps caps-box" data-caps="pick"></span>
                 </div>
                 <div class="row">
                   <div>
                     <div class="row-title">Switch format</div>
-                    <div class="row-hint">HEX, RGB, RGBA, HSL, HSLA</div>
+                    <div class="row-hint">Change between HEX, RGB, HSL and more</div>
                   </div>
                   <span class="caps caps-box" data-caps="cycle"></span>
                 </div>
                 <div class="row">
                   <div>
                     <div class="row-title">Cancel</div>
-                    <div class="row-hint">Closes the picker</div>
+                    <div class="row-hint">Close the picker without copying</div>
                   </div>
                   <span class="caps caps-box" data-caps="cancel"></span>
                 </div>
@@ -167,15 +167,15 @@
           </div>
           <div class="row">
             <div>
-              <div class="row-title">Copied notification</div>
-              <div class="row-hint">A system notification after you copy a color</div>
+              <div class="row-title">Notifications</div>
+              <div class="row-hint">Show notifications from XPicker</div>
             </div>
             <button class="toggle" role="switch" data-field="notify"></button>
           </div>
           <div class="row">
             <div>
-              <div class="row-title">Remember</div>
-              <div class="row-hint">Recent colors to keep</div>
+              <div class="row-title">Recent colors</div>
+              <div class="row-hint">How many colors to keep in your list</div>
             </div>
             <div class="segmented" data-field="historySize" data-options="5:5,10:10,20:20"></div>
           </div>
@@ -189,26 +189,35 @@
           <div class="row">
             <div>
               <div class="row-title">Start picking</div>
-              <div class="row-hint">Works from any app</div>
+              <div class="row-hint">Press this anywhere to pick a color</div>
             </div>
             <button class="recorder" data-field="shortcut"></button>
           </div>
           <div class="row">
-            <div class="row-title">Copy color</div>
+            <div>
+              <div class="row-title">Copy color</div>
+              <div class="row-hint">Copy the color under your cursor</div>
+            </div>
             <button class="recorder" data-field="pick"></button>
           </div>
           <div class="row">
-            <div class="row-title">Switch format</div>
+            <div>
+              <div class="row-title">Switch format</div>
+              <div class="row-hint">Change between HEX, RGB, HSL and more</div>
+            </div>
             <button class="recorder" data-field="cycle"></button>
           </div>
           <div class="row">
-            <div class="row-title">Cancel</div>
+            <div>
+              <div class="row-title">Cancel</div>
+              <div class="row-hint">Close the picker without copying</div>
+            </div>
             <button class="recorder" data-field="cancel"></button>
           </div>
           <div class="row">
             <div>
               <div class="row-title">Open XPicker</div>
-              <div class="row-hint">From the picker, opens this window</div>
+              <div class="row-hint">Open this window from the picker</div>
             </div>
             <button class="recorder" data-field="open"></button>
           </div>
@@ -219,21 +228,21 @@
           <div class="row">
             <div>
               <div class="row-title">Start with computer</div>
-              <div class="row-hint">Starts quietly in the tray when you log in</div>
+              <div class="row-hint">Open XPicker in the tray when your computer starts</div>
             </div>
             <button class="toggle" role="switch" data-field="startWithComputer"></button>
           </div>
           <div class="row">
             <div>
               <div class="row-title">Pick on launch</div>
-              <div class="row-hint">Opening XPicker starts the picker right away</div>
+              <div class="row-hint">Open the picker as soon as XPicker starts</div>
             </div>
             <button class="toggle" role="switch" data-field="pickOnLaunch"></button>
           </div>
           <div class="row">
             <div>
               <div class="row-title">Close to tray</div>
-              <div class="row-hint">Keeps the shortcut working. Off: quits when nothing is open.</div>
+              <div class="row-hint">Keep XPicker running when you close it, so your shortcut still works</div>
             </div>
             <button class="toggle" role="switch" data-field="closeToTray"></button>
           </div>
@@ -244,7 +253,7 @@
           <div class="row">
             <div>
               <div class="row-title">Update automatically</div>
-              <div class="row-hint">Installs new versions when you're not using XPicker</div>
+              <div class="row-hint">Install new versions when you're not using XPicker</div>
             </div>
             <button class="toggle" role="switch" data-field="autoUpdate"></button>
           </div>
@@ -267,7 +276,7 @@
 
         <p class="status footer-status"></p>
         <div class="footer">
-          <button id="replay" class="btn btn-ghost">Show welcome screen</button>
+          <button id="open-folder" class="btn btn-ghost"><i class="icon icon-folder"></i>Open settings folder</button>
           <button id="reset" class="btn btn-ghost"><i class="icon icon-rotate-ccw"></i>Reset all settings</button>
         </div>
 

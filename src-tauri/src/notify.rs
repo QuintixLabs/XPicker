@@ -16,15 +16,18 @@ pub fn copied(app: &AppHandle, value: &str, hex: &str) {
     }
 }
 
-/// Update news. These stay in the notification center.
+/// Update news. These stay in the notification center. Like everything here,
+/// they follow the Notifications setting.
 pub fn info(app: &AppHandle, title: &str, body: &str) {
-    show(app, title, body, None, false);
+    if app.state::<crate::store::Store>().get().settings.notify {
+        show(app, title, body, None, false);
+    }
 }
 
-/// A small square of the color, saved once per color in the cache folder.
+/// A small square of the color, saved once per color in XPicker's cache folder.
 fn swatch(app: &AppHandle, hex: &str) -> Option<PathBuf> {
     let n = u32::from_str_radix(hex, 16).ok()?;
-    let dir = app.path().app_cache_dir().ok()?.join("swatches");
+    let dir = app.path().cache_dir().ok()?.join("XPicker").join("swatches");
     let path = dir.join(format!("{hex}.png"));
     if !path.exists() {
         std::fs::create_dir_all(&dir).ok()?;
