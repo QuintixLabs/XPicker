@@ -28,32 +28,38 @@ npm run build    # make the installer, see Setup
 
 ## Working on dev
 
+Do all your work on `dev`, docs and README changes too. Never commit straight to `main`.
+
 ```sh
 git switch dev
 git add -A
-git commit -m "test thing"
+git commit -m "fix: the thing"
 git push origin dev
 ```
 
-When it works, move it to `main` as one clean commit:
+See [Committing](/docs/contents/02_COMMITING.md) for how to write the message: every commit appears in the release notes.
+
+## Moving dev to main
+
+When it works, make `main` the same as `dev`:
 
 ```sh
-git switch main
-git merge --squash dev
-git commit -m "feat: add the thing"
-git push origin main
+git push origin dev:main
 ```
 
-See [Committing](/docs/contents/02_COMMITING.md) for how to write the message, because it appears in the release notes.
+Every commit you made on `dev` goes to `main` as it is, in the same order.
 
-After that, `dev` is behind `main`. Bring it along:
+If Git answers **rejected (non-fast-forward)**, `main` has a commit that `dev` doesn't (something was committed straight to `main`, or a pull request was merged there). Nothing was changed. Bring that commit into `dev` first, then push again:
 
 ```sh
 git switch dev
-git fetch origin
-git reset --hard origin/main
-git push --force origin dev
+git pull
+git merge origin/main -m "chore: merge main into dev"
+git push origin dev
+git push origin dev:main
 ```
+
+Never use `--force` here: it would throw away whatever is only on `main`.
 
 ## Pull requests
 
@@ -66,11 +72,13 @@ npm install
 npm run dev
 ```
 
-To merge it, use **Squash and merge** on GitHub, so it lands as one clean commit. Then:
+To merge it, use **Squash and merge** on GitHub, so it lands as one clean commit. That puts it on `main`, so bring `dev` along:
 
 ```sh
-git switch main
-git pull origin main
+git switch dev
+git pull
+git merge origin/main -m "chore: merge main into dev"
+git push origin dev
 ```
 
 ## Publishing a release
@@ -78,18 +86,19 @@ git pull origin main
 1. Set the new version, like `1.1.0`, with no `v`:
 
    ```sh
-   git switch main
+   git switch dev
    npm version 1.1.0 --no-git-tag-version
    ```
 
-   This changes `package.json` and `package-lock.json`. The app, the installer and the updates all read the version from `package.json`. The version in `src-tauri/Cargo.toml` stays as it is, nothing uses it.
+   This changes `package.json` and `package-lock.json`, and copies the number into `src-tauri/Cargo.toml` and `Cargo.lock` (`scripts/sync-version.mjs` does that part). The app, the installer and the updates all read the version from `package.json`.
 
-2. Commit and push it:
+2. Commit it on `dev`, then make `main` the same as `dev`:
 
    ```sh
-   git add package.json package-lock.json
+   git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock
    git commit -m "chore: release 1.1.0"
-   git push origin main
+   git push origin dev
+   git push origin dev:main
    ```
 
 3. On GitHub, open **Releases**. A draft called `v1.1.0` shows up with a downloads table, the commits sorted under headings, and the contributors. Windows, macOS and Linux get built into it, which takes around 15 minutes. Users get nothing yet.
