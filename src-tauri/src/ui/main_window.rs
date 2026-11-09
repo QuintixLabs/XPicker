@@ -108,7 +108,11 @@ fn open_on(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
             logo::update_window(&tracked);
         }
     });
-    Ok(())
+
+    // Opened from the tray or a second start, XPicker isn't the app in front, and
+    // Windows would leave a new window behind the others with only a taskbar
+    // button. Asking for focus brings it to the front.
+    window.set_focus()
 }
 
 // ------------------------------------------------------------
