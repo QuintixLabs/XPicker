@@ -48,6 +48,8 @@ pub struct Settings {
     pub pick_on_launch: bool,
     /// Off: quit once nothing is open (with pick_on_launch, that's "quick pick").
     pub close_to_tray: bool,
+    /// The tray icon. Hidden, XPicker is opened by starting it again.
+    pub show_in_tray: bool,
     pub auto_update: bool,
     /// Show the welcome screen on the next start (true until it's been gone through).
     pub show_welcome: bool,
@@ -68,6 +70,7 @@ impl Default for Settings {
             start_with_computer: false,
             pick_on_launch: false,
             close_to_tray: true,
+            show_in_tray: true,
             auto_update: true,
             show_welcome: true,
         }

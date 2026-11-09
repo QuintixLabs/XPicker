@@ -32,6 +32,11 @@ function renderChoices(state) {
   }
 }
 
+// macOS keeps tray icons in the menu bar.
+if (navigator.userAgent.includes('Mac')) {
+  for (const el of $$('[data-tray-hint]')) el.textContent = 'Show XPicker in the menu bar';
+}
+
 onRender(renderChoices);
 
 for (const el of $$('.segmented[data-field]')) {

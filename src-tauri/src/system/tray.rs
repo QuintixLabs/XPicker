@@ -47,7 +47,8 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
     if let Some(icon) = logo::tray_icon(light).or_else(|| app.default_window_icon().cloned()) {
         tray = tray.icon(icon);
     }
-    tray.build(app)?;
+    let tray = tray.build(app)?;
+    let _ = tray.set_visible(shown(app));
     logo::remember_light(light);
     watch_taskbar(app, light);
     Ok(())
@@ -82,7 +83,14 @@ pub fn refresh(app: &AppHandle) {
             let _ = tray.set_menu(Some(menu));
         }
         let _ = tray.set_tooltip(Some(tooltip(app)));
+        let _ = tray.set_visible(shown(app));
     }
+}
+
+/// "Tray icon" in Settings. Hidden, XPicker is opened by starting it again
+/// (it's already running, so that just opens the window).
+fn shown(app: &AppHandle) -> bool {
+    app.state::<Store>().get().settings.show_in_tray
 }
 
 /// Hover text while something is happening ("Updating to 1.0.4…"); None goes back to normal.
