@@ -6,8 +6,8 @@
 
 <p align="center">
 <a href="#-installation">📦 Installation</a> •
-<a href="#-features">⭐ Features</a>
-<!--<a href="#-showcase">📸 Showcase</a>-->
+<a href="#-features">⭐ Features</a> •
+<a href="#-showcase">📸 Showcase</a>
 </p>
 
 ## 📦 Installation
@@ -30,9 +30,9 @@ Run it, and the welcome screen lets you pick your hotkeys before you start.
 - *And much more...!*
 
 
-<!--
+
 ## 📸 Showcase
--->
+
 
 <!---
 <table>
@@ -45,9 +45,11 @@ Run it, and the welcome screen lets you pick your hotkeys before you start.
 ---->
 
 
-<!---
-https://github.com/user-attachments/assets/a82207b6-f0b9-432e-a3d2-008d62a45a6b
--->
+https://github.com/user-attachments/assets/a06ad288-3ed3-4e90-ac1f-805d356bc448
+
+
+
+
 
 
 
