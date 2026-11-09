@@ -79,14 +79,8 @@ function drawAt(g, left, top, px, py, color, formatIndex) {
   const gx = left + BORDER;
   const gy = top + BORDER;
 
-  // Soft shadow, then the white frame.
+  // White frame
   g.globalAlpha = 1;
-  g.fillStyle = 'rgba(0, 0, 0, 0.14)';
-  roundRect(left - 3, top + 3, WIDTH + 6, HEIGHT + 8, RADIUS + 3, g);
-  g.fill();
-  g.fillStyle = 'rgba(0, 0, 0, 0.22)';
-  roundRect(left - 1, top + 1, WIDTH + 2, HEIGHT + 3, RADIUS + 1, g);
-  g.fill();
   g.fillStyle = '#fff';
   roundRect(left, top, WIDTH, HEIGHT, RADIUS, g);
   g.fill();
