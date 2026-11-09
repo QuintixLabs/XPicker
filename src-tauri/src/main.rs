@@ -68,16 +68,23 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("failed to start XPicker");
 
-    app.run(|app, event| {
-        if let RunEvent::ExitRequested { code, api, .. } = event {
-            // Last window closed: stay in the tray, unless "Close to tray" is off.
-            // Exit from the tray menu (code is set) always quits.
+    app.run(|app, event| match event {
+        // Last window closed: stay in the tray, unless "Close to tray" is off.
+        // Exit from the tray menu (code is set) always quits.
+        RunEvent::ExitRequested { code, api, .. } => {
             if code.is_none() && picker::keep_running(app) {
                 api.prevent_exit();
             } else {
                 updates::install_on_exit(app);
             }
         }
+        // macOS: opening XPicker while it runs (Finder, Spotlight, Launchpad) doesn't
+        // start a second copy; macOS asks the running one to reopen instead. Treat it
+        // like opening it again anywhere else, so it can always be reached, even
+        // with the tray icon hidden.
+        #[cfg(target_os = "macos")]
+        RunEvent::Reopen { .. } => picker::launch(app, false),
+        _ => {}
     });
 }
 
