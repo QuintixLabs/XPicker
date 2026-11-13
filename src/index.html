@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="styles/window/sidebar.css" />
     <link rel="stylesheet" href="styles/window/update-bar.css" />
     <link rel="stylesheet" href="styles/window/dialog.css" />
+    <link rel="stylesheet" href="styles/window/reveal.css" />
+    <link rel="stylesheet" href="styles/window/notice.css" />
     <link rel="stylesheet" href="styles/pages/welcome.css" />
     <link rel="stylesheet" href="styles/pages/colors.css" />
     <link rel="stylesheet" href="styles/pages/settings.css" />
@@ -59,6 +61,7 @@
             <div class="step-icon"><img class="logo" src="assets/logos/logo.svg" alt="" /></div>
             <h1>Welcome to XPicker</h1>
             <p class="lead">Pick any color on your screen and copy it in the format you need.</p>
+            <div class="reveal" data-setup><div class="reveal-inner"><div class="notice"></div></div></div>
           </div>
 
           <div class="step" data-step="1" hidden>
@@ -151,6 +154,7 @@
           <h2>Colors</h2>
           <button id="clear" class="btn btn-ghost"><i class="icon icon-eraser"></i>Clear all</button>
         </header>
+        <div class="reveal" data-setup><div class="reveal-inner"><div class="notice"></div></div></div>
         <div id="formats" class="segmented formats"></div>
         <button id="hero" class="hero"></button>
         <p id="earlier" class="label">Earlier</p>
@@ -161,19 +165,6 @@
         <header class="page-head">
           <h2>Settings</h2>
         </header>
-
-        <div id="desktop-setup" hidden>
-          <h3 class="section">GNOME</h3>
-          <div class="group">
-            <div class="row">
-              <div>
-                <div class="row-title">Pick without asking</div>
-                <div class="row-hint" id="desktop-setup-text"></div>
-              </div>
-              <button id="desktop-setup-button" class="btn btn-accent btn-sm">Set up</button>
-            </div>
-          </div>
-        </div>
 
         <h3 class="section">General</h3>
         <div class="group">

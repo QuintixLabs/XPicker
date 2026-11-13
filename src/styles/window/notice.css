@@ -1,0 +1,69 @@
+/* ============================================================
+   window/notice.css
+   The yellow note with a button: GNOME's one-time setup, on the
+   welcome screen and the Colors page (see js/window/setup.js).
+   ============================================================ */
+
+.notice {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.notice-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+
+.notice-action > span:first-child {
+  flex: 1 1 260px;
+}
+
+.notice-error {
+  flex-basis: 100%;
+}
+
+.notice-error .notice-error-text {
+  color: var(--danger);
+  font-size: 12px;
+}
+
+/* Set up and Waiting… share one spot, so the button is always as wide as the
+   longer of the two and nothing next to it moves when it changes. */
+.allow-button {
+  display: inline-grid;
+  place-items: center;
+}
+
+.allow-button > span {
+  grid-area: 1 / 1;
+}
+
+.allow-button > .when-waiting,
+.allow-button.is-waiting > .when-ready {
+  visibility: hidden;
+}
+
+.allow-button.is-waiting > .when-waiting {
+  visibility: visible;
+}
+
+.allow-button:disabled {
+  cursor: default;
+}
+
+/* Until it's set up, the welcome screen waits for it. */
+.needs-setup .welcome .step-actions,
+.needs-setup .welcome .dots {
+  opacity: 0;
+  pointer-events: none;
+}

@@ -1,0 +1,31 @@
+/* ============================================================
+   window/reveal.css
+   Notes and warnings that grow open and closed (see window/reveal.js).
+   ============================================================ */
+
+.reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  /* Even, unhurried growth: it starts gently and settles gently, so it never
+     looks like it jumps to half first. */
+  transition:
+    grid-template-rows 340ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+/* Holds the content at full size while the row around it opens. */
+.reveal-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The first look at a page: already in place, no animation. */
+.reveal.no-transition {
+  transition: none;
+}

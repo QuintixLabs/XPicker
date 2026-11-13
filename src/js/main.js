@@ -14,6 +14,7 @@ import './window/theme.js';
 import './window/dialog.js';
 import './controls/key-recorder.js';
 import './window/update-bar.js';
+import './window/setup.js';
 import { show } from './window/sidebar.js';
 import { goStep } from './pages/welcome.js';
 import './pages/colors.js';
