@@ -28,6 +28,8 @@ pub fn info(app: &AppHandle, title: &str, body: &str) {
 }
 
 /// A small square of the color, saved once per color in XPicker's cache folder.
+/// Only the colors XPicker still keeps (the last 20, whatever Recent colors
+/// shows) keep theirs; the rest are removed whenever a new one is made.
 fn swatch(app: &AppHandle, hex: &str) -> Option<PathBuf> {
     let n = u32::from_str_radix(hex, 16).ok()?;
     let dir = app.path().cache_dir().ok()?.join("XPicker").join("swatches");
@@ -36,6 +38,13 @@ fn swatch(app: &AppHandle, hex: &str) -> Option<PathBuf> {
         std::fs::create_dir_all(&dir).ok()?;
         let [_, r, g, b] = n.to_be_bytes();
         xcap::image::RgbaImage::from_pixel(64, 64, xcap::image::Rgba([r, g, b, 255])).save(&path).ok()?;
+        let kept: Vec<String> = app.state::<Store>().get().history.into_iter().map(|entry| format!("{}.png", entry.hex)).collect();
+        for file in std::fs::read_dir(&dir).into_iter().flatten().flatten() {
+            let name = file.file_name().to_string_lossy().into_owned();
+            if name.ends_with(".png") && name != format!("{hex}.png") && !kept.contains(&name) {
+                let _ = std::fs::remove_file(file.path());
+            }
+        }
     }
     Some(path)
 }
