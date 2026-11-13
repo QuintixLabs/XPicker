@@ -7,12 +7,17 @@
 // Saved as "Mouse:<button>" or "Key:<code>". The start shortcut: "Ctrl+Shift+KeyX".
 
 const IS_MAC = navigator.userAgent.includes('Mac');
+const IS_LINUX = !IS_MAC && navigator.userAgent.includes('Linux');
+/** What the Windows/Super key is called on this system. */
+const META = IS_MAC ? 'Cmd' : IS_LINUX ? 'Super' : 'Win';
 
+// Linux reports the Super key by its old name, OSLeft/OSRight.
 const MODIFIERS = {
   ControlLeft: 'Control', ControlRight: 'Control',
   ShiftLeft: 'Shift', ShiftRight: 'Shift',
   AltLeft: 'Alt', AltRight: 'Alt',
   MetaLeft: 'Meta', MetaRight: 'Meta',
+  OSLeft: 'Meta', OSRight: 'Meta',
 };
 
 const NAMES = {
@@ -22,8 +27,8 @@ const NAMES = {
   Control: 'Ctrl',
   Ctrl: 'Ctrl',
   Alt: IS_MAC ? 'Option' : 'Alt',
-  Meta: IS_MAC ? 'Cmd' : 'Win',
-  Super: IS_MAC ? 'Cmd' : 'Win',
+  Meta: META,
+  Super: META,
   Escape: 'Esc',
   ArrowUp: '↑',
   ArrowDown: '↓',
