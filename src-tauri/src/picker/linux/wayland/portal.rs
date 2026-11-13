@@ -118,6 +118,8 @@ fn path_of(uri: &str) -> Option<PathBuf> {
 static SESSION: Mutex<Option<(OwnedObjectPath, String)>> = Mutex::new(None);
 /// While you're choosing a new key in XPicker, the old one does nothing.
 static PAUSED: AtomicBool = AtomicBool::new(false);
+/// One binding at a time: XPicker sets its key more than once while starting.
+static BINDING: Mutex<()> = Mutex::new(());
 
 pub fn set_shortcut(app: &AppHandle, shortcut: &str) {
     let trigger = super::keys_of(shortcut).map(|(mods, key)| trigger_of(&mods, &key));
@@ -133,6 +135,10 @@ pub fn set_shortcut(app: &AppHandle, shortcut: &str) {
 }
 
 fn bind(app: &AppHandle, trigger: String) {
+    let _one_at_a_time = BINDING.lock().unwrap();
+    if SESSION.lock().unwrap().as_ref().is_some_and(|(_, held)| *held == trigger) {
+        return;
+    }
     let Some(bus) = connection() else { return };
     let interface = Some("org.freedesktop.portal.GlobalShortcuts");
     if let Some((old, _)) = SESSION.lock().unwrap().take() {
@@ -145,8 +151,17 @@ fn bind(app: &AppHandle, trigger: String) {
     }) else {
         return;
     };
-    let Some(session) = created.get("session_handle").and_then(|v| String::try_from(v.clone()).ok()) else { return };
-    let Ok(session) = ObjectPath::try_from(session.as_str()).map(OwnedObjectPath::from) else { return };
+    // Text in the standard; some desktops send it as an object path.
+    let session = created.get("session_handle").and_then(|v| {
+        String::try_from(v.clone())
+            .ok()
+            .and_then(|s| ObjectPath::try_from(s).ok().map(OwnedObjectPath::from))
+            .or_else(|| OwnedObjectPath::try_from(v.clone()).ok())
+    });
+    let Some(session) = session else {
+        debug(&format!("the portal gave no session: {created:?}"));
+        return;
+    };
     let shortcuts = vec![("pick", HashMap::from([("description", Value::from("Start picking")), ("preferred_trigger", Value::from(trigger.as_str()))]))];
     let bound = ask(bus, |token| {
         let options = HashMap::from([("handle_token", Value::from(token))]);
