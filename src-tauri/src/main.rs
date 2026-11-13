@@ -35,11 +35,17 @@ fn main() {
             let handle = app.handle();
             let store = settings::Store::load(handle);
             settings::remove_old_cache(handle);
-            let shortcut = store.get().settings.shortcut;
+            let settings = store.get().settings;
+            let shortcut = settings.shortcut.clone();
             app.manage(store);
 
             notifications::register(handle);
             tray::create(handle)?;
+            // Keep the system's "start with computer" in step with the setting, pointing
+            // at this copy of XPicker. Not from a dev build, which isn't the installed one.
+            if !cfg!(debug_assertions) {
+                let _ = startup::set(handle, settings.start_with_computer);
+            }
             if let Err(err) = shortcut::apply(handle, &shortcut) {
                 eprintln!("XPicker: couldn't register {shortcut}: {err}");
             }

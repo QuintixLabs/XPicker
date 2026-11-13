@@ -34,7 +34,20 @@ use crate::{
 const ID: &str = "xpicker";
 const RECENT_COUNT: usize = 5;
 
+/// Linux trays name the icon after the app's name, which is the program's
+/// file name ("xpicker") unless it's set.
+#[cfg(target_os = "linux")]
+fn set_app_name() {
+    #[link(name = "glib-2.0")]
+    extern "C" {
+        fn g_set_application_name(name: *const std::ffi::c_char);
+    }
+    unsafe { g_set_application_name(c"XPicker".as_ptr()) };
+}
+
 pub fn create(app: &AppHandle) -> tauri::Result<()> {
+    #[cfg(target_os = "linux")]
+    set_app_name();
     let light = logo::taskbar_is_light();
     let mut tray = TrayIconBuilder::with_id(ID)
         .tooltip(tooltip(app))
