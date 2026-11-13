@@ -18,7 +18,13 @@ use window::commands;
 
 fn main() {
     let app = tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| picker::launch(app, false)))
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            if args.iter().any(|arg| arg == picker::PICK_FLAG) {
+                picker::pick_from_shortcut(app, false);
+            } else {
+                picker::launch(app, false);
+            }
+        }))
         .plugin(picker::shortcut_plugin())
         .plugin(startup::plugin())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -104,6 +110,8 @@ fn open_on_start(app: &AppHandle) {
         // Restarted by a quiet update: back to the tray, nothing pops up.
         Some(mode) if mode == "background" => {}
         Some(mode) if mode == "manual" => window::open_async(app),
+        // Started by the desktop's shortcut (GNOME): just the picker.
+        _ if std::env::args().any(|arg| arg == picker::PICK_FLAG) => picker::pick_from_shortcut(app, true),
         // Login start: quietly in the tray.
         _ if at_login => {}
         _ => picker::launch(app, true),

@@ -111,6 +111,22 @@ pub fn launch(app: &AppHandle, first_start: bool) {
     }
 }
 
+/// "xpicker --pick": a desktop's own shortcut asking for a pick (GNOME).
+pub const PICK_FLAG: &str = "--pick";
+
+/// The desktop's shortcut was pressed. `first_start`: XPicker wasn't running,
+/// so it's a quick pick, like Pick on launch.
+pub fn pick_from_shortcut(app: &AppHandle, first_start: bool) {
+    if app.state::<Store>().get().settings.show_welcome {
+        main_window::open_async(app);
+        return;
+    }
+    if first_start {
+        app.state::<Frame>().quick.store(true, Ordering::Release);
+    }
+    start(app);
+}
+
 /// A quick pick only lasts while it's just the picker: once you open the
 /// XPicker window, it behaves like a normal start again.
 pub fn end_quick_pick(app: &AppHandle) {

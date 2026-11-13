@@ -1,24 +1,21 @@
 // ============================================================
 // picker/linux/wayland/portal.rs
-// The desktop portal: screenshots where nothing better is there, and
-// the shortcut on GNOME. XPicker says who it is first, so the desktop
-// can remember your answer instead of asking every time.
+// The desktop portal: screenshots where nothing better is there.
+// XPicker says who it is first, so the desktop can remember your
+// answer instead of asking every time.
 // ============================================================
 
 use std::{
     collections::HashMap,
     path::PathBuf,
     sync::{
-        atomic::{AtomicBool, AtomicU32, Ordering},
-        Mutex, OnceLock,
+        atomic::{AtomicU32, Ordering},
+        OnceLock,
     },
-    thread,
 };
-use tauri::AppHandle;
 use zbus::{
-    blocking::{Connection, MessageIterator, Proxy},
-    zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Value},
-    MatchRule,
+    blocking::{Connection, Proxy},
+    zvariant::{OwnedValue, Value},
 };
 
 const DESKTOP: &str = "org.freedesktop.portal.Desktop";
@@ -105,105 +102,4 @@ fn path_of(uri: &str) -> Option<PathBuf> {
         }
     }
     Some(PathBuf::from(String::from_utf8(bytes).ok()?))
-}
-
-// ------------------------------------------------------------
-// The shortcut
-// ------------------------------------------------------------
-
-// The first time, the desktop shows its own window to confirm the key. A
-// session holds the key for as long as XPicker runs; a new key needs a new one.
-
-/// The session and the key it holds, like "CTRL+SHIFT+x".
-static SESSION: Mutex<Option<(OwnedObjectPath, String)>> = Mutex::new(None);
-/// While you're choosing a new key in XPicker, the old one does nothing.
-static PAUSED: AtomicBool = AtomicBool::new(false);
-/// One binding at a time: XPicker sets its key more than once while starting.
-static BINDING: Mutex<()> = Mutex::new(());
-
-pub fn set_shortcut(app: &AppHandle, shortcut: &str) {
-    let trigger = super::keys_of(shortcut).map(|(mods, key)| trigger_of(&mods, &key));
-    // Empty while a new key is being chosen: keep the session, just ignore it.
-    PAUSED.store(trigger.is_none(), Ordering::Relaxed);
-    let Some(trigger) = trigger else { return };
-    if SESSION.lock().unwrap().as_ref().is_some_and(|(_, held)| *held == trigger) {
-        return;
-    }
-    let app = app.clone();
-    // The desktop may show a window and wait for you, so not on this thread.
-    thread::spawn(move || bind(&app, trigger));
-}
-
-fn bind(app: &AppHandle, trigger: String) {
-    let _one_at_a_time = BINDING.lock().unwrap();
-    if SESSION.lock().unwrap().as_ref().is_some_and(|(_, held)| *held == trigger) {
-        return;
-    }
-    let Some(bus) = connection() else { return };
-    let interface = Some("org.freedesktop.portal.GlobalShortcuts");
-    if let Some((old, _)) = SESSION.lock().unwrap().take() {
-        let _ = bus.call_method(Some(DESKTOP), old.as_str(), Some("org.freedesktop.portal.Session"), "Close", &());
-    }
-    debug(&format!("asking for the shortcut {trigger}"));
-    let Some(created) = ask(bus, |token| {
-        let options = HashMap::from([("handle_token", Value::from(token)), ("session_handle_token", Value::from(token))]);
-        bus.call_method(Some(DESKTOP), PATH, interface, "CreateSession", &(options,))
-    }) else {
-        return;
-    };
-    // Text in the standard; some desktops send it as an object path.
-    let session = created.get("session_handle").and_then(|v| {
-        String::try_from(v.clone())
-            .ok()
-            .and_then(|s| ObjectPath::try_from(s).ok().map(OwnedObjectPath::from))
-            .or_else(|| OwnedObjectPath::try_from(v.clone()).ok())
-    });
-    let Some(session) = session else {
-        debug(&format!("the portal gave no session: {created:?}"));
-        return;
-    };
-    let shortcuts = vec![("pick", HashMap::from([("description", Value::from("Start picking")), ("preferred_trigger", Value::from(trigger.as_str()))]))];
-    let bound = ask(bus, |token| {
-        let options = HashMap::from([("handle_token", Value::from(token))]);
-        bus.call_method(Some(DESKTOP), PATH, interface, "BindShortcuts", &(&session, shortcuts, "", options))
-    });
-    debug(&format!("shortcut {}", if bound.is_some() { "ready" } else { "not set up" }));
-    if bound.is_some() {
-        *SESSION.lock().unwrap() = Some((session, trigger));
-        listen(app);
-    }
-}
-
-/// The key being pressed, from any session of ours.
-fn listen(app: &AppHandle) {
-    static STARTED: OnceLock<()> = OnceLock::new();
-    let app = app.clone();
-    STARTED.get_or_init(move || {
-        let Some(bus) = connection() else { return };
-        let Ok(rule) = MatchRule::builder()
-            .msg_type(zbus::message::Type::Signal)
-            .interface("org.freedesktop.portal.GlobalShortcuts")
-            .and_then(|r| r.member("Activated"))
-            .map(|r| r.build())
-        else {
-            return;
-        };
-        let Ok(activations) = MessageIterator::for_match_rule(rule, bus, None) else { return };
-        let _ = thread::Builder::new().name("shortcut".into()).spawn(move || {
-            for message in activations.flatten() {
-                let Ok((_, id, _, _)) = message.body().deserialize::<(OwnedObjectPath, String, u64, HashMap<String, OwnedValue>)>() else { continue };
-                debug(&format!("shortcut pressed: {id}"));
-                if id == "pick" && !PAUSED.load(Ordering::Relaxed) {
-                    crate::picker::shortcut_pressed(&app);
-                }
-            }
-        });
-    });
-}
-
-/// (["CTRL", "SHIFT"], "X") → "CTRL+SHIFT+x", as the shortcut standard writes keys.
-fn trigger_of(mods: &[&str], key: &str) -> String {
-    let key = if key.len() == 1 { key.to_lowercase() } else { key.to_string() };
-    let mods = mods.iter().map(|m| if *m == "SUPER" { "LOGO" } else { m });
-    mods.chain([key.as_str()]).collect::<Vec<_>>().join("+")
 }

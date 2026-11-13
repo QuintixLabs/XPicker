@@ -2,9 +2,10 @@
 // picker/linux/wayland/mod.rs
 // Picks the way for this desktop. Screenshots: KDE through KWin,
 // Hyprland and other wlroots desktops directly, and the portal for the
-// rest. The shortcut: a Hyprland binding, or the portal on GNOME.
+// rest. The shortcut: a Hyprland binding, or a GNOME custom shortcut.
 // ============================================================
 
+mod gnome;
 mod hyprland;
 mod kde;
 mod portal;
@@ -66,9 +67,9 @@ pub fn cover_screen() {
 pub fn set_shortcut(app: &AppHandle, shortcut: &str) {
     match desktop() {
         Desktop::Hyprland => hyprland::set_shortcut(app, shortcut),
+        Desktop::Gnome => gnome::set_shortcut(shortcut),
         // KDE passes keys to Tauri's own shortcut, so it needs nothing.
-        Desktop::Gnome | Desktop::Other => portal::set_shortcut(app, shortcut),
-        Desktop::Kde => {}
+        Desktop::Kde | Desktop::Other => {}
     }
 }
 
