@@ -112,6 +112,12 @@ function updateReady(version) {
 }
 
 listen('update-ready', (e) => updateReady(e.payload));
+// "Update automatically" was switched off: the waiting update is gone.
+listen('update-cancelled', () => {
+  readyVersion = null;
+  renderBar();
+  if (button.dataset.state === 'ready') setState('idle');
+});
 invoke('pending_update').then(updateReady);
 
 $('#update-restart').addEventListener('click', restartToUpdate);

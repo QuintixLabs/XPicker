@@ -5,7 +5,7 @@
 // ============================================================
 
 // Manual:     Settings → Check for updates. Installs right away and reopens.
-// Automatic:  while XPicker is open, at most every 6 hours. Downloads quietly,
+// Automatic:  at every start, then every 6 hours. Downloads quietly,
 //             then installs only when XPicker isn't being used (no picker, no
 //             window), or as it closes.
 // Quick pick: (Pick on launch, or Close to tray off) checks right at launch; if
@@ -114,11 +114,15 @@ pub fn start_auto(app: &AppHandle, delay: Duration) {
     let app = app.clone();
     thread::spawn(move || {
         thread::sleep(delay);
+        // Once at every start, then every few hours while XPicker keeps running.
+        let mut first = true;
         loop {
             let data = app.state::<Store>().get();
-            if data.settings.auto_update && settings::now_ms().saturating_sub(data.last_update_check) >= CHECK_EVERY_MS {
+            let due = first || settings::now_ms().saturating_sub(data.last_update_check) >= CHECK_EVERY_MS;
+            if data.settings.auto_update && due {
                 auto_update(&app);
             }
+            first = false;
             thread::sleep(LOOP_EVERY);
         }
     });
@@ -250,6 +254,14 @@ fn apply(app: &AppHandle, update: Update, bytes: &[u8], mode: &str) -> Result<()
 fn status(app: &AppHandle, text: Option<&str>) {
     let _ = app.emit("update-status", text);
     tray::set_status(app, text);
+}
+
+/// "Update automatically" switched off: a downloaded update waiting to install is
+/// dropped, so XPicker stays on this version.
+pub fn cancel(app: &AppHandle) {
+    if app.state::<Pending>().ready.lock().unwrap().take().is_some() {
+        let _ = app.emit("update-cancelled", ());
+    }
 }
 
 /// A downloaded update waiting to install, so a newly opened window can show its bar.

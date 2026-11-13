@@ -40,6 +40,9 @@ pub async fn save_settings(app: AppHandle, store: State<'_, Store>, settings: Se
     if settings.theme != previous.theme {
         super::apply_theme(&app, &settings.theme);
     }
+    if previous.auto_update && !settings.auto_update {
+        updates::cancel(&app);
+    }
     Ok(store.update(&app, |data| data.settings = settings))
 }
 
