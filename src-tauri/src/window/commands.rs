@@ -119,6 +119,23 @@ pub async fn open_from_picker(app: AppHandle) {
     picker::open_app(&app);
 }
 
+/// macOS: a pick was stopped because XPicker can't see the screen yet.
+#[tauri::command]
+pub fn screen_permission() -> bool {
+    #[cfg(target_os = "macos")]
+    return picker::macos::take_needed();
+    #[cfg(not(target_os = "macos"))]
+    false
+}
+
+#[tauri::command]
+pub fn open_screen_settings() -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    return picker::macos::open_settings();
+    #[cfg(not(target_os = "macos"))]
+    Ok(())
+}
+
 // ------------------------------------------------------------
 // Updates
 // ------------------------------------------------------------

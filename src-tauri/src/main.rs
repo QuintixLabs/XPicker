@@ -67,6 +67,8 @@ fn main() {
             commands::pending_update,
             commands::open_link,
             commands::open_settings_folder,
+            commands::screen_permission,
+            commands::open_screen_settings,
         ])
         .build(tauri::generate_context!())
         .expect("failed to start XPicker");

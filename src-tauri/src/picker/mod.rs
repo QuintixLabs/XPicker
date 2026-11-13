@@ -10,6 +10,8 @@
 pub mod colors;
 #[cfg(target_os = "linux")]
 mod linux;
+#[cfg(target_os = "macos")]
+pub mod macos;
 pub mod overlay;
 
 use std::{
@@ -152,6 +154,11 @@ fn run(app: &AppHandle, hide_main: bool) {
 }
 
 fn open(app: &AppHandle) -> Result<(), Box<dyn Error>> {
+    #[cfg(target_os = "macos")]
+    if !macos::allowed() {
+        macos::ask(app);
+        return Ok(());
+    }
     let cursor = cursor_position(app)?;
     let monitor = app
         .monitor_from_point(cursor.x, cursor.y)?

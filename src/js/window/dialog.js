@@ -8,11 +8,12 @@ import { $ } from '../core/state.js';
 
 const dialog = $('#confirm');
 
-/** Asks first. Resolves true if the main button was pressed. */
-export function confirmAction({ title, text, action }) {
+/** Asks first. Resolves true if the main button was pressed. `danger`: a red button. */
+export function confirmAction({ title, text, action, danger = true }) {
   $('#confirm-title').textContent = title;
   $('#confirm-text').textContent = text;
   $('#confirm-ok').textContent = action;
+  $('#confirm-ok').className = danger ? 'btn btn-danger' : 'btn btn-accent';
   dialog.returnValue = '';
   dialog.classList.remove('is-closing');
   dialog.showModal();
