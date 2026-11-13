@@ -6,7 +6,9 @@
 // ============================================================
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
+
+use crate::settings::Store;
 
 #[link(name = "CoreGraphics", kind = "framework")]
 extern "C" {
@@ -21,10 +23,15 @@ pub fn allowed() -> bool {
     unsafe { CGPreflightScreenCaptureAccess() }
 }
 
-/// The first time, macOS shows its own prompt. After that, only System
-/// Settings can turn it on, so the window says where.
+/// One window at a time: the first time, only macOS's own (it shows that just
+/// once). After that, only XPicker's message, since macOS won't ask again.
 pub fn ask(app: &AppHandle) {
-    unsafe { CGRequestScreenCaptureAccess() };
+    let store = app.state::<Store>();
+    if !store.get().screen_permission_asked {
+        store.update(app, |data| data.screen_permission_asked = true);
+        unsafe { CGRequestScreenCaptureAccess() };
+        return;
+    }
     NEEDED.store(true, Ordering::Relaxed);
     let _ = crate::window::open(app);
     let _ = app.emit("screen-permission", ());

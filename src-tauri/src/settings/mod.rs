@@ -100,6 +100,9 @@ pub struct Data {
     /// Unix ms of the last automatic update check.
     pub last_update_check: u64,
     pub update_notice: Option<UpdateNotice>,
+    /// macOS: its own Screen Recording window was shown once (it never shows
+    /// it twice), so from now on XPicker's message says what to do.
+    pub screen_permission_asked: bool,
 }
 
 // ------------------------------------------------------------

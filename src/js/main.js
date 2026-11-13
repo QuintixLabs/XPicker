@@ -27,12 +27,13 @@ show(app.state.settings.showWelcome ? 'welcome' : (window.__START_PAGE__ ?? 'col
 listen('navigate', (e) => !app.state.settings.showWelcome && show(e.payload));
 goStep(0);
 
-// macOS: a pick was stopped because XPicker can't see the screen yet.
+// macOS: a pick was stopped because XPicker can't see the screen yet. The button
+// goes straight to Privacy & Security → Screen Recording.
 async function screenPermission() {
   if (!(await invoke('screen_permission'))) return;
   const ok = await confirmAction({
     title: 'Let XPicker see your screen',
-    text: 'To pick colors, turn on XPicker in System Settings, under Privacy & Security → Screen Recording. Then quit XPicker and open it again.',
+    text: 'Click Open System Settings and turn on XPicker. Then quit XPicker and open it again.',
     action: 'Open System Settings',
     danger: false,
   });
