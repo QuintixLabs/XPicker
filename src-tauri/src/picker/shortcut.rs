@@ -1,5 +1,5 @@
 // ============================================================
-// shortcut.rs
+// picker/shortcut.rs
 // The "Start picking" shortcut (Ctrl+Shift+X by default), which
 // works from anywhere on your computer.
 // ============================================================
@@ -7,7 +7,7 @@
 use tauri::{plugin::TauriPlugin, AppHandle, Manager, Wry};
 use tauri_plugin_global_shortcut::{Builder, GlobalShortcutExt, ShortcutState};
 
-use crate::{app::settings::Store, picker};
+use crate::{picker, settings::Store};
 
 pub fn plugin() -> TauriPlugin<Wry> {
     Builder::new()

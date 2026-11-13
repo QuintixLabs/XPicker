@@ -1,5 +1,5 @@
 // ============================================================
-// startup.rs
+// tray/startup.rs
 // "Start with computer": XPicker starts quietly in the tray when
 // you log in.
 // ============================================================

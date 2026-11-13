@@ -1,5 +1,5 @@
 // ============================================================
-// logo.rs
+// window/logo.rs
 // Picks the logo that stays visible: the white-X logo on dark
 // backgrounds, the dark-X one on light. Used by the title bar and
 // the tray.
@@ -19,7 +19,7 @@ pub fn remember_light(light: bool) {
 }
 
 /// Linux: whether the desktop is light, as last checked. The windows can't
-/// always see it change themselves there (see ui/mod.rs).
+/// always see it change themselves there (see window/mod.rs).
 pub fn system_is_light() -> bool {
     LIGHT.load(Ordering::Relaxed)
 }

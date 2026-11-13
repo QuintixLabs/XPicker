@@ -6,17 +6,17 @@
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod app;
 mod picker;
-mod system;
-mod ui;
+mod settings;
+mod tray;
+mod window;
 
 use std::time::Duration;
 use tauri::{AppHandle, Manager, RunEvent};
 
-use app::{commands, settings, updates};
-use system::{notifications, shortcut, startup, tray};
-use ui::main_window;
+use picker::shortcut;
+use tray::{notifications, startup, updates};
+use window::commands;
 
 fn main() {
     let app = tauri::Builder::default()
@@ -98,7 +98,7 @@ fn open_on_start(app: &AppHandle) {
     match updates::just_updated(app).map(|notice| notice.mode) {
         // Restarted by a quiet update: back to the tray, nothing pops up.
         Some(mode) if mode == "background" => {}
-        Some(mode) if mode == "manual" => main_window::open_async(app),
+        Some(mode) if mode == "manual" => window::open_async(app),
         // Login start: quietly in the tray.
         _ if at_login => {}
         _ => picker::launch(app, true),

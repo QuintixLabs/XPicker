@@ -1,5 +1,5 @@
 // ============================================================
-// notifications.rs
+// tray/notifications.rs
 // XPicker's notifications ("Copied to clipboard", "XPicker was
 // updated"), shown as real system notifications.
 // ============================================================
@@ -10,7 +10,7 @@
 use std::{path::PathBuf, time::SystemTime};
 use tauri::{AppHandle, Manager};
 
-use crate::app::settings::Store;
+use crate::settings::Store;
 
 /// How long a "copied" notification is kept before it removes itself.
 const COPIED_LIFETIME_SECS: i64 = 6;

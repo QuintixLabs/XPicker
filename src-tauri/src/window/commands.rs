@@ -1,5 +1,5 @@
 // ============================================================
-// commands.rs
+// window/commands.rs
 // Everything the windows can ask the app to do: save settings,
 // copy a color, check for updates, and so on.
 // ============================================================
@@ -11,13 +11,9 @@
 use tauri::{ipc::Response, AppHandle, State, WebviewWindow};
 
 use crate::{
-    app::{
-        settings::{self, Data, Settings, Store},
-        updates,
-    },
-    picker::{self, clipboard::Clipboard, Frame},
-    system::{shortcut, startup},
-    ui::main_window,
+    picker::{self, clipboard::Clipboard, shortcut, Frame},
+    settings::{self, Data, Settings, Store},
+    tray::{startup, updates},
 };
 
 // ------------------------------------------------------------
@@ -42,7 +38,7 @@ pub async fn save_settings(app: AppHandle, store: State<'_, Store>, settings: Se
         startup::set(&app, settings.start_with_computer)?;
     }
     if settings.theme != previous.theme {
-        main_window::apply_theme(&app, &settings.theme);
+        super::apply_theme(&app, &settings.theme);
     }
     Ok(store.update(&app, |data| data.settings = settings))
 }

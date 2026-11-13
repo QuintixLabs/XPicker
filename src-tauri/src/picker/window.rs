@@ -1,5 +1,5 @@
 // ============================================================
-// picker_window.rs
+// picker/window.rs
 // The full-screen picker window. A new one is made for each pick
 // and closed after, so nothing stays in memory between picks.
 // ============================================================
@@ -7,7 +7,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tauri::{AppHandle, Manager, Monitor, WebviewWindow};
 
-use super::builder;
+use crate::window::builder;
 
 /// Each picker window gets a fresh label ("picker-3"), so one that's still
 /// closing can never clash with the next one.

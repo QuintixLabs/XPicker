@@ -1,14 +1,16 @@
 // ============================================================
-// main_window.rs
+// window/mod.rs
 // The main XPicker window: opening, closing, and matching its
 // title bar to the theme.
 // ============================================================
 
-use std::thread;
-use tauri::{window::Color, AppHandle, Emitter, Manager, Theme, WebviewWindow, WindowEvent};
+pub mod commands;
+pub mod logo;
 
-use super::{builder, logo};
-use crate::app::settings::Store;
+use std::{path::PathBuf, thread};
+use tauri::{window::Color, AppHandle, Emitter, Manager, Theme, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent};
+
+use crate::settings::Store;
 
 pub const LABEL: &str = "main";
 
@@ -136,5 +138,32 @@ pub fn apply_theme(app: &AppHandle, theme: &str) {
     if let Some(window) = window(app) {
         let _ = window.set_theme(window_theme(theme));
         logo::update_window(&window);
+    }
+}
+
+// ------------------------------------------------------------
+// Building it (the picker window too)
+// ------------------------------------------------------------
+
+/// The windows' browser data (sidebar state, theme memory) goes in an "XPicker"
+/// folder. Every window must use the same one. macOS decides this itself.
+fn browser_data(app: &AppHandle) -> Option<PathBuf> {
+    if cfg!(target_os = "macos") {
+        return None;
+    }
+    app.path().local_data_dir().ok().map(|dir| dir.join("XPicker").join("WebView"))
+}
+
+/// Starts a window for one of the pages in src/ ("index.html", "picker.html").
+pub fn builder<'a>(app: &'a AppHandle, label: impl Into<String>, page: &str) -> WebviewWindowBuilder<'a, tauri::Wry, AppHandle> {
+    let mut builder = WebviewWindowBuilder::new(app, label, WebviewUrl::App(page.into()));
+    // On Linux the page can't always tell when the desktop switches between
+    // light and dark, so it's told: here at the start, then by "system-theme".
+    if cfg!(target_os = "linux") {
+        builder = builder.initialization_script(format!("window.__SYSTEM_LIGHT__ = {};", logo::system_is_light()));
+    }
+    match browser_data(app) {
+        Some(dir) => builder.data_directory(dir),
+        None => builder,
     }
 }

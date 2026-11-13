@@ -1,5 +1,5 @@
 // ============================================================
-// settings.rs
+// settings/mod.rs
 // The settings file: your settings and recent colors, saved in
 //   Windows  %APPDATA%\XPicker\xpicker.json
 //   macOS    ~/Library/Application Support/XPicker/xpicker.json
@@ -12,7 +12,7 @@ use serde_json::Value;
 use std::{fs, path::PathBuf, sync::Mutex, time::SystemTime};
 use tauri::{AppHandle, Emitter, Manager};
 
-use crate::system::tray;
+use crate::tray;
 
 const FILE: &str = "xpicker.json";
 

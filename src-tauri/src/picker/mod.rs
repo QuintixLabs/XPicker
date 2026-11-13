@@ -10,6 +10,8 @@
 mod capture;
 pub mod clipboard;
 pub mod color_formats;
+pub mod shortcut;
+pub mod window;
 
 use std::{
     error::Error,
@@ -20,12 +22,9 @@ use std::{
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    app::{
-        settings::{self, Store},
-        updates,
-    },
-    system::notifications,
-    ui::{main_window, picker_window},
+    settings::{self, Store},
+    tray::{notifications, updates},
+    window as main_window,
 };
 use clipboard::Clipboard;
 
@@ -101,7 +100,7 @@ fn run(app: &AppHandle, hide_main: bool) {
     if state.starting.swap(true, Ordering::AcqRel) {
         return;
     }
-    if !picker_window::is_open(app) {
+    if !window::is_open(app) {
         if hide_main && main_window::is_visible(app) {
             main_window::hide(app);
             state.restore_main.store(true, Ordering::Relaxed);
@@ -124,7 +123,7 @@ fn open(app: &AppHandle) -> Result<(), Box<dyn Error>> {
 
     let frame = capture::grab(&monitor, cursor)?;
     *app.state::<Frame>().data.lock().unwrap() = Some(frame);
-    picker_window::open(app, &monitor)?;
+    window::open(app, &monitor)?;
     Ok(())
 }
 
@@ -145,7 +144,7 @@ pub fn finish(app: &AppHandle, value: &str, hex: &str, format: usize) -> Result<
 
     // Close the picker first: while it's on screen, Windows would send the
     // notification straight to the notification center without showing it.
-    picker_window::close(app);
+    window::close(app);
     restore_main(app);
     if copied.is_ok() && data.settings.notify {
         thread::sleep(AFTER_PICKER_CLOSES);
@@ -162,14 +161,14 @@ pub fn finish(app: &AppHandle, value: &str, hex: &str, format: usize) -> Result<
 
 /// Cancel pressed in the picker.
 pub fn cancel(app: &AppHandle) {
-    picker_window::close(app);
+    window::close(app);
     restore_main(app);
 }
 
 /// "Open XPicker" pressed in the picker: show the app, then close the picker.
 pub fn open_app(app: &AppHandle) {
     let _ = main_window::open(app); // first, so there's never a moment with no window
-    picker_window::close(app);
+    window::close(app);
     restore_main(app);
 }
 

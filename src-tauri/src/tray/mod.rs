@@ -1,5 +1,5 @@
 // ============================================================
-// tray.rs
+// tray/mod.rs
 // The tray icon next to the clock and its menu. Click opens XPicker
 // (click again to close it); right-click shows the menu.
 // ============================================================
@@ -21,11 +21,14 @@ use tauri::{
     AppHandle, Emitter, Manager,
 };
 
+pub mod notifications;
+pub mod startup;
+pub mod updates;
+
 use crate::{
-    app::settings::Store,
     picker::{self, clipboard::Clipboard, color_formats},
-    system::notifications,
-    ui::{logo, main_window},
+    settings::Store,
+    window::{self, logo},
 };
 
 const ID: &str = "xpicker";
@@ -40,7 +43,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
         .on_menu_event(|app, event| on_menu(app, event.id.as_ref()))
         .on_tray_icon_event(|tray, event| {
             if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
-                main_window::toggle_async(tray.app_handle());
+                window::toggle_async(tray.app_handle());
             }
         });
 
@@ -136,8 +139,8 @@ fn menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
 fn on_menu(app: &AppHandle, id: &str) {
     match id {
         "pick" => picker::start(app),
-        "open" => main_window::open_async(app),
-        "settings" => main_window::open_page_async(app, "settings"),
+        "open" => window::open_async(app),
+        "settings" => window::open_page_async(app, "settings"),
         "exit" => app.exit(0),
         _ => {
             if let Some(hex) = id.strip_prefix("recent:") {

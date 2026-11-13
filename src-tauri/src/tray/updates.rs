@@ -1,5 +1,5 @@
 // ============================================================
-// updates.rs
+// tray/updates.rs
 // Checking for, downloading and installing new versions from
 // GitHub Releases. Never interrupts a pick.
 // ============================================================
@@ -22,11 +22,11 @@ use std::{
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
+use super::notifications;
 use crate::{
-    app::settings::{self, Store, UpdateNotice},
-    picker::{self, Frame},
-    system::{notifications, tray},
-    ui::{main_window, picker_window},
+    picker::{self, window as picker_window, Frame},
+    settings::{self, Store, UpdateNotice},
+    tray, window,
 };
 
 const CHECK_EVERY_MS: u64 = 6 * 60 * 60 * 1000;
@@ -213,7 +213,7 @@ fn install_when_idle(app: &AppHandle) {
 
 /// Nobody is using XPicker: no picker open or opening, no visible window.
 fn is_idle(app: &AppHandle) -> bool {
-    !is_picking(app) && !main_window::is_visible(app)
+    !is_picking(app) && !window::is_visible(app)
 }
 
 /// Called as XPicker exits: a downloaded update installs now, without reopening.

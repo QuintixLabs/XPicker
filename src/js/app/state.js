@@ -13,7 +13,7 @@ export const $$ = (selector) => [...document.querySelectorAll(selector)];
 // The keys used inside the picker, and what they're called.
 export const ACTIONS = { pick: 'Copy color', cycle: 'Switch format', cancel: 'Cancel', open: 'Open XPicker' };
 
-// What "Reset all settings" goes back to. Matches Settings::default in settings.rs.
+// What "Reset all settings" goes back to. Matches Settings::default in settings/mod.rs.
 export const DEFAULTS = {
   shortcut: 'Ctrl+Shift+KeyX',
   pick: 'Mouse:2',

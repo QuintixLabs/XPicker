@@ -35,7 +35,7 @@ let shown = true;
 
 /** Measures, draws and places the bar for these keys. Called once the screenshot is loaded. */
 export function prepare(settings) {
-  // On Linux the app says whether the desktop is light (see ui/mod.rs).
+  // On Linux the app says whether the desktop is light (see window/mod.rs).
   const systemLight = window.__SYSTEM_LIGHT__ ?? matchMedia('(prefers-color-scheme: light)').matches;
   const light = settings.theme === 'light' || (settings.theme === 'system' && systemLight);
   const colors = light ? COLORS.light : COLORS.dark;
