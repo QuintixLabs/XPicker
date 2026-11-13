@@ -24,6 +24,19 @@ pub fn grab(monitor: &Monitor, cursor: PhysicalPosition<f64>) -> Result<Vec<u8>,
     let y = (cursor.y - pos.y as f64) * height as f64 / size.height as f64;
     // Screenshot pixels per window pixel.
     let scale = width as f64 / (size.width as f64 / monitor.scale_factor());
+    // XPICKER_DEBUG=1 prints what each pick saw, for testing.
+    if std::env::var_os("XPICKER_DEBUG").is_some() {
+        eprintln!(
+            "XPicker: screen at {},{} size {}x{} scale {}; screenshot {width}x{height}; cursor {:.0},{:.0}; picker scale {scale}",
+            pos.x,
+            pos.y,
+            size.width,
+            size.height,
+            monitor.scale_factor(),
+            cursor.x,
+            cursor.y
+        );
+    }
 
     // The part of the screen not taken by taskbars, as room left on each edge.
     let free = monitor.work_area();

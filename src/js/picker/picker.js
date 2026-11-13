@@ -40,6 +40,12 @@ async function begin() {
   if (buffer.byteLength <= screen.HEADER) return; // no screenshot waiting
 
   const cursor = await screen.load(buffer);
+  // Linux: the window's real size may already differ from what was reported.
+  const before = screen.shot.scale;
+  if (screen.LINUX && screen.fit()) {
+    cursor.x = (cursor.x * before) / screen.shot.scale;
+    cursor.y = (cursor.y * before) / screen.shot.scale;
+  }
   controls.mouse.x = cursor.x;
   controls.mouse.y = cursor.y;
   controls.prepare(state.settings);
