@@ -45,7 +45,7 @@
 .update[data-state="checking"] .update-spinner,
 .update[data-state="updating"] .update-spinner {
   display: block;
-  animation: spin 1.5s linear infinite; /* loading.svg's own speed */
+  animation: spin 1.5s linear infinite;
 }
 
 .update[data-state="latest"] .update-done {
