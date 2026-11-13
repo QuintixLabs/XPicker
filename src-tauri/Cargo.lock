@@ -6202,6 +6202,7 @@ version = "2.2.0"
 dependencies = [
  "arboard",
  "dark-light",
+ "image",
  "libwayshot-xcap",
  "notify-rust",
  "serde",
@@ -6215,6 +6216,7 @@ dependencies = [
  "tauri-plugin-updater",
  "windows",
  "xcap",
+ "zbus",
 ]
 
 [[package]]

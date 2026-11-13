@@ -38,6 +38,16 @@
         "languages": ["English"],
         "customLanguageFiles": { "English": "installer/windows/English.nsh" }
       }
+    },
+    "linux": {
+      "deb": {
+        "desktopTemplate": "installer/linux/xpicker.desktop",
+        "files": { "/usr/share/applications/com.quintixlabs.xpicker.desktop": "installer/linux/com.quintixlabs.xpicker.desktop" }
+      },
+      "rpm": {
+        "desktopTemplate": "installer/linux/xpicker.desktop",
+        "files": { "/usr/share/applications/com.quintixlabs.xpicker.desktop": "installer/linux/com.quintixlabs.xpicker.desktop" }
+      }
     }
   },
   "plugins": {

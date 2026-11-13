@@ -14,6 +14,8 @@ use std::{
 };
 use tauri::AppHandle;
 
+use super::keys_of;
+
 fn socket(name: &str) -> Option<PathBuf> {
     let signature = std::env::var("HYPRLAND_INSTANCE_SIGNATURE").ok()?;
     let runtime = std::env::var("XDG_RUNTIME_DIR").unwrap_or_default();
@@ -99,62 +101,4 @@ fn listen(app: &AppHandle) {
             thread::sleep(Duration::from_secs(1));
         });
     });
-}
-
-/// "Ctrl+Shift+KeyX" → (["CTRL", "SHIFT"], "X"). None for keys Hyprland can't name.
-fn keys_of(shortcut: &str) -> Option<(Vec<&'static str>, String)> {
-    let (mut mods, mut key) = (Vec::new(), None);
-    for part in shortcut.split('+') {
-        match part {
-            "Ctrl" | "Control" => mods.push("CTRL"),
-            "Shift" => mods.push("SHIFT"),
-            "Alt" => mods.push("ALT"),
-            "Super" | "Meta" | "Cmd" => mods.push("SUPER"),
-            code => key = Some(key_name(code)?),
-        }
-    }
-    Some((mods, key?))
-}
-
-/// A key code from the page ("KeyX", "Digit1", "F5") as Hyprland names it.
-fn key_name(code: &str) -> Option<String> {
-    if let Some(rest) = code.strip_prefix("Key").or_else(|| code.strip_prefix("Digit")) {
-        return Some(rest.into());
-    }
-    if let Some(rest) = code.strip_prefix("Numpad").filter(|r| r.len() == 1) {
-        return Some(format!("KP_{rest}"));
-    }
-    if code.len() > 1 && code.starts_with('F') && code[1..].chars().all(|c| c.is_ascii_digit()) {
-        return Some(code.into());
-    }
-    let name = match code {
-        "Space" => "space",
-        "Enter" => "Return",
-        "Escape" => "Escape",
-        "Tab" => "Tab",
-        "Backspace" => "BackSpace",
-        "Delete" => "Delete",
-        "Insert" => "Insert",
-        "Home" => "Home",
-        "End" => "End",
-        "PageUp" => "Prior",
-        "PageDown" => "Next",
-        "ArrowUp" => "Up",
-        "ArrowDown" => "Down",
-        "ArrowLeft" => "Left",
-        "ArrowRight" => "Right",
-        "Minus" => "minus",
-        "Equal" => "equal",
-        "Comma" => "comma",
-        "Period" => "period",
-        "Slash" => "slash",
-        "Backslash" => "backslash",
-        "Semicolon" => "semicolon",
-        "Quote" => "apostrophe",
-        "Backquote" => "grave",
-        "BracketLeft" => "bracketleft",
-        "BracketRight" => "bracketright",
-        _ => return None,
-    };
-    Some(name.into())
 }

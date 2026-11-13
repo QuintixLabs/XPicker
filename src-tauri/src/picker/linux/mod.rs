@@ -40,7 +40,7 @@ pub fn capture(monitor: &Monitor) -> Option<Result<(u32, u32, Vec<u8>), String>>
     let top = (monitor.position().y as f64 / scale).round() as i32;
     let width = (monitor.size().width as f64 / scale).round() as u32;
     let height = (monitor.size().height as f64 / scale).round() as u32;
-    wayland::capture(left, top, width, height)
+    Some(wayland::capture(left, top, width, height))
 }
 
 /// The shortcut, for desktops that don't pass keys to Tauri's own shortcuts.

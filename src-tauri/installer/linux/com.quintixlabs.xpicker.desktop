@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=XPicker
+Comment=Lightweight, simple, and easy-to-use screen color picker
+Exec=xpicker
+Icon=xpicker
+NoDisplay=true
+X-KDE-DBUS-Restricted-Interfaces=org.kde.KWin.ScreenShot2
