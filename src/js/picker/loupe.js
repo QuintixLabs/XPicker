@@ -1,5 +1,5 @@
 // ============================================================
-// loupe.js
+// picker/loupe.js
 // The loupe next to the cursor: the zoomed-in pixels and the color
 // bar underneath with the value.
 // ============================================================
@@ -9,7 +9,7 @@
 // it). There the loupe is its own small layer that just moves. Windows and
 // macOS draw the screenshot fast, so there it's drawn straight onto it.
 
-import { FORMATS, isLight } from '../shared/color-formats.js';
+import { FORMATS, isLight } from '../core/color-formats.js';
 import { LINUX, ctx, markDirty, moveLayer, roundRect, shot, sizeLayer, snap } from './screen.js';
 
 export const FONT = 'Outfit, system-ui, sans-serif';

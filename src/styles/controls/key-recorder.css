@@ -1,0 +1,63 @@
+/* ============================================================
+   controls/key-recorder.css
+   The key boxes: recording a key, and showing keys.
+   ============================================================ */
+
+.caps {
+  display: inline-flex;
+  gap: 4px;
+}
+
+/* Sized to its keys, no empty space. */
+.recorder {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 5px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg);
+  transition: border-color 120ms, box-shadow 120ms;
+}
+
+.recorder:hover {
+  border-color: var(--faint);
+}
+
+.recorder.is-recording {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.16);
+}
+
+/* "Press a key or click…" */
+.hint {
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* A key that's already used: "Used by Copy color" inside the box. */
+.recorder.is-recording.is-clash {
+  border-color: var(--warning);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--warning) 18%, transparent);
+}
+
+.recorder.is-clash .hint {
+  color: var(--warning);
+}
+
+/* The other box using that key glows for a moment, so you see where. */
+.recorder.is-flash {
+  border-color: var(--warning);
+  transition: border-color 120ms;
+}
+
+/* Read-only keys, the same size as a key box so rows line up. */
+.caps-box {
+  align-items: center;
+  height: 36px;
+  padding: 0 5px;
+  border: 1px solid transparent;
+}

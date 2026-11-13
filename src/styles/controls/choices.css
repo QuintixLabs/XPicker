@@ -1,0 +1,43 @@
+/* ============================================================
+   controls/choices.css
+   Choice buttons (HEX/RGB…, 5/10/20, the theme icons).
+   ============================================================ */
+
+.segmented {
+  display: inline-flex;
+  flex: none;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+}
+
+.segmented button {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.segmented button:hover {
+  color: var(--text);
+}
+
+.segmented .is-active {
+  background: var(--raised);
+  color: var(--text);
+}
+
+.segmented-icons button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  padding: 0;
+}
+
+.segmented-icons .icon {
+  width: 16px;
+  height: 16px;
+}

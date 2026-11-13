@@ -1,10 +1,10 @@
 // ============================================================
-// screen.js
+// picker/screen.js
 // The screenshot under the picker: shows it, reads its pixels, and
 // the small layers drawn on top of it (hint bar, Linux loupe).
 // ============================================================
 
-import { rgb } from '../shared/color-formats.js';
+import { rgb } from '../core/color-formats.js';
 
 const MIN_FRAME_MS = 4; // draw cap (~250 fps), plenty for high refresh monitors
 

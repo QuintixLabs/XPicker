@@ -1,5 +1,5 @@
 // ============================================================
-// hints.js
+// picker/hints.js
 // The bar that shows your keys while picking. It sits at the
 // bottom, above any taskbar, and fades out while the loupe or the
 // cursor is near it.
@@ -8,7 +8,7 @@
 // It's its own small layer: drawn once when the picker opens, then only faded
 // (by CSS, see picker.css), so it costs nothing while you move the mouse.
 
-import { bindingKeys } from '../shared/bindings.js';
+import { bindingKeys } from '../core/bindings.js';
 import { FONT } from './loupe.js';
 import { moveLayer, roundRect, shot, sizeLayer, snap } from './screen.js';
 

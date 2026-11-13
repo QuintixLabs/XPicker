@@ -1,11 +1,11 @@
 // ============================================================
-// controls.js
+// picker/controls.js
 // Your keys and mouse in the picker: copy the color, switch the
 // format, cancel, or open XPicker.
 // ============================================================
 
-import { FORMATS } from '../shared/color-formats.js';
-import { fromKey, fromMouse } from '../shared/bindings.js';
+import { FORMATS } from '../core/color-formats.js';
+import { fromKey, fromMouse } from '../core/bindings.js';
 import { LINUX, pixelAt, pixelUnder, request, shot } from './screen.js';
 
 const { invoke } = window.__TAURI__.core;

@@ -1,10 +1,10 @@
 // ============================================================
-// picker.js
+// picker/picker.js
 // Starts the picker: loads the screenshot, sets up the loupe, the
 // hint bar and your keys, then shows the window.
 // ============================================================
 
-import '../shared/native.js';
+import '../core/native.js';
 import * as screen from './screen.js';
 import * as loupe from './loupe.js';
 import * as hints from './hints.js';
