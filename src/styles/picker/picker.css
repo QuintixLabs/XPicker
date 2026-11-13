@@ -1,8 +1,6 @@
 /* ============================================================
    picker/picker.css
-   The picker window: the screenshot fills the screen, with the
-   hint bar (and on Linux the loupe) as small layers on top. They're
-   drawn by js/picker/.
+   The picker window: the screenshot and the layers on it.
    ============================================================ */
 
 body {

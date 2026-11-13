@@ -1,7 +1,6 @@
 // ============================================================
 // picker/controls.js
-// Your keys and mouse in the picker: copy the color, switch the
-// format, cancel, or open XPicker.
+// Keys and mouse in the picker: copy, switch format, cancel.
 // ============================================================
 
 import { FORMATS } from '../core/color-formats.js';

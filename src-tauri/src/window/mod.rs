@@ -1,7 +1,6 @@
 // ============================================================
 // window/mod.rs
-// The main XPicker window: opening, closing, and matching its
-// title bar to the theme.
+// The main window: opening, closing and its theme.
 // ============================================================
 
 pub mod commands;

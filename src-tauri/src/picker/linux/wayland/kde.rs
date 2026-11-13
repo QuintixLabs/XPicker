@@ -1,13 +1,7 @@
 // ============================================================
 // picker/linux/wayland/kde.rs
-// KDE Plasma: the screenshot straight from KWin, and where the cursor
-// is, from a tiny KWin script.
+// KDE Plasma: screenshots from KWin, and where the cursor is.
 // ============================================================
-
-// KWin only hands out screenshots without asking to apps whose desktop file
-// says so (src-tauri/installer/linux/xpicker.desktop). That's the .deb and
-// .rpm; an AppImage runs from a different folder every time, so KWin turns it
-// away and the portal is used instead.
 
 use std::{
     collections::HashMap,

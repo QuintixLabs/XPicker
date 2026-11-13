@@ -1,7 +1,6 @@
 // ============================================================
 // pages/colors.js
-// The Colors page: your latest pick, the list under it, and
-// copying them in the format you choose.
+// The Colors page: your picks and copying them.
 // ============================================================
 
 import { FORMATS, rgb, isLight } from '../core/color-formats.js';

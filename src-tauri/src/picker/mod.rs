@@ -1,7 +1,6 @@
 // ============================================================
 // picker/mod.rs
-// Picking a color: the shortcut, taking a screenshot, opening the
-// picker, then copying, remembering and announcing the color you chose.
+// Picking a color, from the shortcut to the copy.
 // ============================================================
 
 // Windows are only ever created or closed from worker threads: doing it on the

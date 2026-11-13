@@ -1,9 +1,6 @@
 // ============================================================
 // picker/linux/wayland/gnome/mod.rs
-// GNOME: a small GNOME Shell extension (in extension/) takes the
-// screenshot without asking or playing the camera sound, and knows
-// where the cursor is. GNOME loads a new extension only after logging
-// out and back in once. Until then, the portal takes screenshots.
+// GNOME: setting up and using the extension.
 // ============================================================
 
 mod shortcut;

@@ -1,8 +1,6 @@
 // ============================================================
 // picker/linux/mod.rs
-// Linux: on X11, xcap and Tauri already do everything. On Wayland
-// apps can't see the cursor or the screen, so each desktop is asked
-// in its own way (wayland/).
+// Linux: X11 needs nothing extra; Wayland goes through wayland/.
 // ============================================================
 
 mod wayland;

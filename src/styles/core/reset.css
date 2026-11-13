@@ -1,7 +1,6 @@
 /* ============================================================
    core/reset.css
-   Makes the windows feel like an app: no text selection, focus
-   rings only for the keyboard, plain buttons, key caps.
+   Base styles that make the windows feel like an app.
    ============================================================ */
 
 *,

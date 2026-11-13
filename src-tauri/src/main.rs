@@ -1,6 +1,6 @@
 // ============================================================
 // main.rs
-// Starts XPicker: the tray icon, the shortcut and the first window.
+// Starts XPicker: the tray, the shortcut and the first window.
 // ============================================================
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]

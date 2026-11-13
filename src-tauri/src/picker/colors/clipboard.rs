@@ -3,9 +3,6 @@
 // Copies the color you picked.
 // ============================================================
 
-// One clipboard handle is kept for as long as XPicker runs: on Linux the
-// copied text is served from XPicker itself, so it has to stay alive.
-
 use std::sync::Mutex;
 
 #[derive(Default)]

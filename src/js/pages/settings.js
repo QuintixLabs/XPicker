@@ -1,7 +1,6 @@
 // ============================================================
 // pages/settings.js
-// The Settings page: switches, choices, the reset buttons, the
-// settings folder and the links at the bottom.
+// The Settings page: switches, keys and resets.
 // ============================================================
 
 import { $, $$, ACTIONS, DEFAULTS, app, invoke, onRender, save } from '../core/state.js';

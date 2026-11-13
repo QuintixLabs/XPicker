@@ -1,7 +1,6 @@
 // ============================================================
 // core/bindings.js
-// How keys and mouse buttons are saved and shown ("Right click",
-// "Ctrl", "Shift + X").
+// Keys and mouse buttons: saving and showing them.
 // ============================================================
 
 // Saved as "Mouse:<button>" or "Key:<code>". The start shortcut: "Ctrl+Shift+KeyX".

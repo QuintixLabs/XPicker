@@ -1,13 +1,7 @@
 // ============================================================
 // picker/linux/wayland/gnome/shortcut.rs
-// GNOME: the shortcut as one of GNOME's own custom shortcuts
-// (Settings → Keyboard → Custom Shortcuts). GNOME runs
-// "xpicker --pick", and the running XPicker opens the picker.
+// GNOME: the shortcut, as a GNOME custom shortcut.
 // ============================================================
-
-// Apps can't hear keys pressed in other apps on Wayland, and GNOME's portal
-// shortcuts need GNOME 48 and an installed desktop file. This works with any
-// GNOME and any install, AppImage included.
 
 use std::{process::Command, sync::Mutex};
 

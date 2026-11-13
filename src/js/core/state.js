@@ -1,7 +1,6 @@
 // ============================================================
 // core/state.js
-// The settings and colors the main window shows, and saving them.
-// Every page and component reads from here.
+// The settings and colors, and saving them.
 // ============================================================
 
 export const { invoke } = window.__TAURI__.core;

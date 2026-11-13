@@ -1,7 +1,6 @@
 // ============================================================
 // picker/linux/wayland/hyprland.rs
-// Hyprland: where the cursor is, and the shortcut as a Hyprland
-// binding, since Hyprland doesn't pass keys to other apps' shortcuts.
+// Hyprland: where the cursor is, and the shortcut.
 // ============================================================
 
 use std::{

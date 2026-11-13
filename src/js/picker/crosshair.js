@@ -1,7 +1,6 @@
 // ============================================================
 // picker/crosshair.js
-// Linux only: XPicker's own crosshair in place of the system cursor,
-// drawn in the same frame as the loupe so the two always move together.
+// Linux: XPicker's own crosshair, so it moves with the loupe.
 // ============================================================
 
 // On Linux the system cursor moves before XPicker hears about it, so on a fast

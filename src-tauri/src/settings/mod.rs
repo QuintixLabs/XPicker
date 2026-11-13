@@ -1,10 +1,6 @@
 // ============================================================
 // settings/mod.rs
-// The settings file: your settings and recent colors, saved in
-//   Windows  %APPDATA%\XPicker\xpicker.json
-//   macOS    ~/Library/Application Support/XPicker/xpicker.json
-//   Linux    ~/.config/XPicker/xpicker.json
-// To see the welcome screen again: exit XPicker, set "showWelcome": true.
+// The settings file.
 // ============================================================
 
 use serde::{Deserialize, Serialize};

@@ -1,8 +1,6 @@
 // ============================================================
 // picker/linux/wayland/gnome/extension/extension.js
-// Runs inside GNOME Shell. Lets XPicker take a screenshot (no prompt,
-// no camera sound) and see where the cursor is. Once XPicker is
-// uninstalled, removes itself and XPicker's shortcut at the next login.
+// The GNOME extension: screenshots and the cursor, without asking.
 // ============================================================
 
 import Gio from 'gi://Gio';

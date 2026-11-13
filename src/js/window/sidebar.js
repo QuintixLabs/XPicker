@@ -1,7 +1,6 @@
 // ============================================================
 // window/sidebar.js
-// The sidebar: switching pages, collapsing it to icons, and the
-// Pick color button.
+// The sidebar.
 // ============================================================
 
 import { keycaps, shortcutKeys } from '../core/bindings.js';

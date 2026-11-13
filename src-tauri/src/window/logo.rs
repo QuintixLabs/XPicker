@@ -1,12 +1,7 @@
 // ============================================================
 // window/logo.rs
-// Picks the logo that stays visible: the white-X logo on dark
-// backgrounds, the dark-X one on light. Used by the title bar and
-// the tray.
+// The logo in the title bar and the tray.
 // ============================================================
-
-// Fixed icons (installer, Start menu, notifications) can't swap, so they use
-// the outlined logo from src-tauri/icons instead.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{image::Image, Theme, WebviewWindow};

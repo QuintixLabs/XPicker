@@ -1,8 +1,6 @@
 // ============================================================
 // picker/macos/mod.rs
-// macOS only lets XPicker see the screen with the Screen Recording
-// permission; without it, a screenshot shows just the wallpaper. So
-// each pick checks first, and the window explains what to turn on.
+// macOS: asking for the Screen Recording permission.
 // ============================================================
 
 use std::sync::atomic::{AtomicBool, Ordering};

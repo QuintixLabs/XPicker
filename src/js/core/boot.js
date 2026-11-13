@@ -1,7 +1,6 @@
 // ============================================================
 // core/boot.js
-// Sets the theme and the sidebar before the window first appears,
-// so it never flashes the wrong one. The welcome screen has no sidebar.
+// Sets the theme before the window appears, so it never flashes.
 // ============================================================
 
 // Loaded as a plain script in <head>, before anything is drawn.

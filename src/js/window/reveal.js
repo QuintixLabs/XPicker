@@ -1,6 +1,6 @@
 // ============================================================
 // window/reveal.js
-// Opens and closes notes and warnings smoothly (the motion is in reveal.css).
+// Opens and closes notes smoothly.
 // ============================================================
 
 export function reveal(el, open, { animate = true } = {}) {

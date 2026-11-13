@@ -1,12 +1,7 @@
 // ============================================================
 // window/commands.rs
-// Everything the windows can ask the app to do: save settings,
-// copy a color, check for updates, and so on.
+// What the windows can ask the app to do.
 // ============================================================
-
-// Anything that touches windows or the global shortcut is async: plain
-// commands run on the UI thread, and doing that work there can freeze the
-// app on Windows.
 
 use tauri::{ipc::Response, AppHandle, State, WebviewWindow};
 

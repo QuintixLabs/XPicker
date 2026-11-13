@@ -1,7 +1,6 @@
 // ============================================================
 // pages/welcome.js
-// The welcome screen on first launch: hello, set up your keys,
-// you're all set.
+// The welcome screen: hello, your keys, all set.
 // ============================================================
 
 import { bindingKeys, keycaps, shortcutKeys } from '../core/bindings.js';

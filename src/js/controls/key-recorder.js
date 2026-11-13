@@ -1,7 +1,6 @@
 // ============================================================
 // controls/key-recorder.js
-// The key boxes in Settings and the welcome screen: click one,
-// then press a key or mouse button to change it.
+// The key boxes: click one, then press a key.
 // ============================================================
 
 import { fromKey, fromMouse, bindingKeys, shortcutKeys, shortcutFromKey, keycaps } from '../core/bindings.js';

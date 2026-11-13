@@ -1,7 +1,6 @@
 // ============================================================
 // core/native.js
-// Makes the windows feel like an app, not a web page: no browser
-// shortcuts, right-click menu, zooming or dragging.
+// Makes the windows feel like an app, not a web page.
 // ============================================================
 
 const BLOCKED_KEYS = new Set(['F3', 'F5', 'F7', 'F12', 'BrowserBack', 'BrowserForward', 'BrowserRefresh']);

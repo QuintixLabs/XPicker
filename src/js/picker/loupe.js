@@ -1,7 +1,6 @@
 // ============================================================
 // picker/loupe.js
-// The loupe next to the cursor: the zoomed-in pixels and the color
-// bar underneath with the value.
+// The loupe: zoomed pixels and the color under the cursor.
 // ============================================================
 
 // On Linux the screenshot is often drawn by the CPU, so redrawing it while the

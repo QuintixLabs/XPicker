@@ -1,7 +1,6 @@
 // ============================================================
 // core/color-formats.js
-// Writes a color as HEX, RGB, RGBA, HSL or HSLA, and tells light
-// colors from dark ones.
+// Color formats: HEX, RGB, RGBA, HSL and HSLA.
 // ============================================================
 
 export const FORMATS = [

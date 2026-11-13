@@ -1,7 +1,6 @@
 // ============================================================
 // window/theme.js
-// Light, dark, or the same as your system. "System" also follows
-// the computer when it switches.
+// Light, dark or the same as your system.
 // ============================================================
 
 // Windows and macOS tell the page when the system switches. On Linux the page

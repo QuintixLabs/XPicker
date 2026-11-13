@@ -1,8 +1,6 @@
 // ============================================================
 // picker/hints.js
-// The bar that shows your keys while picking. It sits at the
-// bottom, above any taskbar, and fades out while the loupe or the
-// cursor is near it.
+// The hint bar: your keys at the bottom while picking.
 // ============================================================
 
 // It's its own small layer: drawn once when the picker opens, then only faded

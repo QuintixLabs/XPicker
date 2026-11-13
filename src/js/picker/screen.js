@@ -1,7 +1,6 @@
 // ============================================================
 // picker/screen.js
-// The screenshot under the picker: shows it, reads its pixels, and
-// the small layers drawn on top of it (hint bar, Linux loupe).
+// The screenshot under the picker, and reading its pixels.
 // ============================================================
 
 import { rgb } from '../core/color-formats.js';

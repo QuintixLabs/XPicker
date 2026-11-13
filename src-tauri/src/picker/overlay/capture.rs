@@ -6,12 +6,6 @@
 use tauri::{Monitor, PhysicalPosition};
 use xcap::Monitor as Screen;
 
-/// What the picker receives: nine little-endian numbers, then the pixels (RGBA):
-/// [width, height, cursor x, cursor y, screen scale × 1000,
-///  taskbar room on the left, top, right, bottom].
-/// The scale lets the picker size itself right away, even while its window is
-/// still being moved to this screen. The taskbar room keeps the hint bar clear
-/// of taskbars and docks. Everything is in screenshot pixels.
 pub const HEADER: usize = 36;
 
 pub fn grab(monitor: &Monitor, cursor: PhysicalPosition<f64>) -> Result<Vec<u8>, String> {

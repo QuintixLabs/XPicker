@@ -1,7 +1,6 @@
 // ============================================================
 // tray/updates.rs
-// Checking for, downloading and installing new versions from
-// GitHub Releases. Never interrupts a pick.
+// Updates: checking, downloading and installing.
 // ============================================================
 
 // Manual:     Settings → Check for updates. Installs right away and reopens.

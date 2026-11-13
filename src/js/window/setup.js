@@ -1,8 +1,6 @@
 // ============================================================
 // window/setup.js
-// GNOME's one-time setup (a small extension, so picking doesn't ask
-// each time or play the camera sound): a note with a Set up button on
-// the welcome screen and the Colors page, like Blip's.
+// GNOME's one-time setup
 // ============================================================
 
 import { $$, invoke } from '../core/state.js';

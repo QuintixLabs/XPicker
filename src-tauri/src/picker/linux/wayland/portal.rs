@@ -1,8 +1,6 @@
 // ============================================================
 // picker/linux/wayland/portal.rs
-// The desktop portal: screenshots where nothing better is there.
-// XPicker says who it is first, so the desktop can remember your
-// answer instead of asking every time.
+// The desktop portal: screenshots where nothing better works.
 // ============================================================
 
 use std::{

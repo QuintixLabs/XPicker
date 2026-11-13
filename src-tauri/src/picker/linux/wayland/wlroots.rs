@@ -1,7 +1,6 @@
 // ============================================================
 // picker/linux/wayland/wlroots.rs
-// Hyprland, Sway, river and other wlroots desktops let apps copy the
-// screen directly: no prompt, and no file in between.
+// Screenshots on wlroots desktops (Hyprland, Sway, river).
 // ============================================================
 
 use libwayshot_xcap::{

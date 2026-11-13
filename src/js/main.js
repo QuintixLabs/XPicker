@@ -1,7 +1,6 @@
 // ============================================================
 // main.js
-// Starts the main window: loads your settings and colors, then
-// opens the right page.
+// Starts the main window: settings, colors, then the right page.
 // ============================================================
 
 import './core/native.js';

@@ -1,7 +1,6 @@
 // ============================================================
 // window/dialog.js
-// The "Are you sure?" box for Clear all and Reset, with its fade
-// in and out.
+// The "Are you sure?" box, with its fade.
 // ============================================================
 
 import { $ } from '../core/state.js';

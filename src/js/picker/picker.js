@@ -1,7 +1,6 @@
 // ============================================================
 // picker/picker.js
-// Starts the picker: loads the screenshot, sets up the loupe, the
-// hint bar and your keys, then shows the window.
+// Starts the picker: loads the screenshot, then shows it.
 // ============================================================
 
 import '../core/native.js';

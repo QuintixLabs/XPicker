@@ -1,7 +1,6 @@
 // ============================================================
 // picker/overlay/mod.rs
-// The full-screen picker window. A new one is made for each pick
-// and closed after, so nothing stays in memory between picks.
+// The full-screen picker window: opening and closing it.
 // ============================================================
 
 pub mod capture;

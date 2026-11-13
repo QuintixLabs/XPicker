@@ -1,7 +1,6 @@
 // ============================================================
 // window/update-bar.js
-// Updates in the window: the "Check for updates" button and the
-// "Restart to update now?" bar.
+// Updates in the window: the button and the ready bar.
 // ============================================================
 
 import { $, invoke, listen } from '../core/state.js';

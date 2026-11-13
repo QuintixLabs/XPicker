@@ -1,9 +1,6 @@
 // ============================================================
 // picker/linux/wayland/mod.rs
-// Picks the way for this desktop. Screenshots: KDE through KWin,
-// GNOME through XPicker's extension, Hyprland and other wlroots desktops
-// directly, and the portal for the rest. The shortcut: a Hyprland
-// binding, or a GNOME custom shortcut.
+// Wayland: picks the right way for each desktop.
 // ============================================================
 
 mod gnome;
