@@ -56,6 +56,13 @@ pub fn capture(left: i32, top: i32, width: u32, height: u32) -> Result<(u32, u32
     }
 }
 
+/// The picker was just shown: make sure it covers the whole screen.
+pub fn cover_screen() {
+    if desktop() == Desktop::Hyprland {
+        hyprland::cover_screen();
+    }
+}
+
 pub fn set_shortcut(app: &AppHandle, shortcut: &str) {
     match desktop() {
         Desktop::Hyprland => hyprland::set_shortcut(app, shortcut),

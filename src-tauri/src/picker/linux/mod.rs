@@ -43,6 +43,13 @@ pub fn capture(monitor: &Monitor) -> Option<Result<(u32, u32, Vec<u8>), String>>
     Some(wayland::capture(left, top, width, height))
 }
 
+/// The picker was just shown: some desktops need help covering the screen.
+pub fn cover_screen() {
+    if on_wayland() {
+        wayland::cover_screen();
+    }
+}
+
 /// The shortcut, for desktops that don't pass keys to Tauri's own shortcuts.
 pub fn set_shortcut(app: &AppHandle, shortcut: &str) {
     if on_wayland() {

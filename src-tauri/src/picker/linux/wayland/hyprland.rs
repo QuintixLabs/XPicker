@@ -45,6 +45,23 @@ pub fn cursor() -> Option<(f64, f64)> {
     Some((x.trim().parse().ok()?, y.trim().parse().ok()?))
 }
 
+/// The picker has just been shown and focused. If Hyprland didn't make it
+/// fullscreen, it's a box on the screen, so ask Hyprland directly.
+pub fn cover_screen() {
+    let own = std::process::id() as u64;
+    for _ in 0..10 {
+        let active = ask("j/activewindow").and_then(|reply| serde_json::from_str::<serde_json::Value>(&reply).ok());
+        if let Some(window) = active.filter(|w| w["pid"].as_u64() == Some(own)) {
+            let fullscreen = &window["fullscreen"];
+            if !fullscreen.as_bool().unwrap_or_else(|| fullscreen.as_i64().unwrap_or(0) != 0) {
+                let _ = ask("dispatch fullscreen 0");
+            }
+            return;
+        }
+        thread::sleep(Duration::from_millis(50));
+    }
+}
+
 // ------------------------------------------------------------
 // The shortcut
 // ------------------------------------------------------------

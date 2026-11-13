@@ -88,9 +88,20 @@ pub async fn frame(frame: State<'_, Frame>) -> Result<Response, String> {
 pub async fn ready(window: WebviewWindow) {
     let _ = window.show();
     // Some Linux desktops (Hyprland) ignore fullscreen asked for before the
-    // window appears, and tile it instead. Asking again once it's there works.
-    if cfg!(target_os = "linux") {
+    // window appears and leave it as a box, so ask again once it's there.
+    #[cfg(target_os = "linux")]
+    {
         let _ = window.set_fullscreen(true);
+        picker::linux::cover_screen();
+        if std::env::var_os("XPICKER_DEBUG").is_some() {
+            std::thread::sleep(std::time::Duration::from_millis(200));
+            eprintln!(
+                "XPicker: picker window at {:?} size {:?}, fullscreen {:?}",
+                window.outer_position().ok(),
+                window.inner_size().ok(),
+                window.is_fullscreen().ok()
+            );
+        }
     }
     let _ = window.set_always_on_top(true);
     let _ = window.set_focus();

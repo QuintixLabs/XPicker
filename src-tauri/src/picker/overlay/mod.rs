@@ -33,7 +33,9 @@ pub fn open(app: &AppHandle, monitor: &Monitor) -> tauri::Result<()> {
     builder(app, label, "picker.html")
         .title("XPicker")
         .decorations(false)
-        .resizable(false)
+        // Linux desktops (Hyprland) keep a window that can't resize at its
+        // size, even when it asks for fullscreen.
+        .resizable(cfg!(target_os = "linux"))
         .shadow(false)
         .always_on_top(true)
         .skip_taskbar(true)
