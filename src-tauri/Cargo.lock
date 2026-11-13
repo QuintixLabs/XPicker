@@ -6202,6 +6202,7 @@ version = "2.2.0"
 dependencies = [
  "arboard",
  "dark-light",
+ "libwayshot-xcap",
  "notify-rust",
  "serde",
  "serde_json",

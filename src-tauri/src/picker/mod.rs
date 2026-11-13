@@ -8,6 +8,8 @@
 // UI thread inside a hotkey or tray callback freezes WebView2 on Windows.
 
 pub mod colors;
+#[cfg(target_os = "linux")]
+mod linux;
 pub mod overlay;
 
 use std::{
@@ -16,7 +18,7 @@ use std::{
     thread,
     time::Duration,
 };
-use tauri::{plugin::TauriPlugin, AppHandle, Manager, Wry};
+use tauri::{plugin::TauriPlugin, AppHandle, Manager, PhysicalPosition, Wry};
 use tauri_plugin_global_shortcut::{Builder, GlobalShortcutExt, ShortcutState};
 
 use crate::{
@@ -58,14 +60,18 @@ impl Frame {
 pub fn shortcut_plugin() -> TauriPlugin<Wry> {
     Builder::new()
         .with_handler(|app, _shortcut, event| {
-            // Does nothing until the welcome screen is finished, so you set
-            // up your keys first.
-            let welcome = app.state::<Store>().get().settings.show_welcome;
-            if event.state() == ShortcutState::Pressed && !welcome {
-                start(app);
+            if event.state() == ShortcutState::Pressed {
+                shortcut_pressed(app);
             }
         })
         .build()
+}
+
+/// Does nothing until the welcome screen is finished, so you set up your keys first.
+pub fn shortcut_pressed(app: &AppHandle) {
+    if !app.state::<Store>().get().settings.show_welcome {
+        start(app);
+    }
 }
 
 pub fn set_shortcut(app: &AppHandle, shortcut: &str) -> Result<(), String> {
@@ -73,10 +79,14 @@ pub fn set_shortcut(app: &AppHandle, shortcut: &str) -> Result<(), String> {
     if shortcut.is_empty() {
         return Ok(());
     }
+    #[cfg(target_os = "linux")]
+    linux::set_shortcut(app, shortcut);
     app.global_shortcut().register(shortcut).map_err(|e| e.to_string())
 }
 
 pub fn clear_shortcut(app: &AppHandle) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    linux::set_shortcut(app, "");
     app.global_shortcut().unregister_all().map_err(|e| e.to_string())
 }
 
@@ -142,7 +152,7 @@ fn run(app: &AppHandle, hide_main: bool) {
 }
 
 fn open(app: &AppHandle) -> Result<(), Box<dyn Error>> {
-    let cursor = app.cursor_position()?;
+    let cursor = cursor_position(app)?;
     let monitor = app
         .monitor_from_point(cursor.x, cursor.y)?
         .or(app.primary_monitor()?)
@@ -152,6 +162,15 @@ fn open(app: &AppHandle) -> Result<(), Box<dyn Error>> {
     *app.state::<Frame>().data.lock().unwrap() = Some(frame);
     overlay::open(app, &monitor)?;
     Ok(())
+}
+
+/// On Wayland only the desktop knows where the cursor is.
+fn cursor_position(app: &AppHandle) -> tauri::Result<PhysicalPosition<f64>> {
+    #[cfg(target_os = "linux")]
+    if let Some(at) = linux::cursor(app) {
+        return Ok(at);
+    }
+    app.cursor_position()
 }
 
 // ------------------------------------------------------------

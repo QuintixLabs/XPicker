@@ -17,15 +17,7 @@ pub const HEADER: usize = 36;
 pub fn grab(monitor: &Monitor, cursor: PhysicalPosition<f64>) -> Result<Vec<u8>, String> {
     let pos = monitor.position();
     let size = monitor.size();
-
-    // macOS reports screens in points, everything else in pixels.
-    let unit = if cfg!(target_os = "macos") { monitor.scale_factor() } else { 1.0 };
-    let center_x = (pos.x as f64 + size.width as f64 / 2.0) / unit;
-    let center_y = (pos.y as f64 + size.height as f64 / 2.0) / unit;
-
-    let screen = Screen::from_point(center_x as i32, center_y as i32).map_err(|e| e.to_string())?;
-    let image = screen.capture_image().map_err(|e| e.to_string())?;
-    let (width, height) = (image.width(), image.height());
+    let (width, height, pixels) = screenshot(monitor)?;
 
     // Cursor relative to the screen, in screenshot pixels.
     let x = (cursor.x - pos.x as f64) * width as f64 / size.width as f64;
@@ -47,10 +39,26 @@ pub fn grab(monitor: &Monitor, cursor: PhysicalPosition<f64>) -> Result<Vec<u8>,
     let right = room((pos.x as i64 + size.width as i64) - (free.position.x as i64 + free.size.width as i64), sx, size.width);
     let bottom = room((pos.y as i64 + size.height as i64) - (free.position.y as i64 + free.size.height as i64), sy, size.height);
 
-    let mut out = Vec::with_capacity(HEADER + image.as_raw().len());
+    let mut out = Vec::with_capacity(HEADER + pixels.len());
     for v in [width as i32, height as i32, x as i32, y as i32, (scale * 1000.0).round() as i32, left, top, right, bottom] {
         out.extend_from_slice(&v.to_le_bytes());
     }
-    out.extend_from_slice(image.as_raw());
+    out.extend_from_slice(&pixels);
     Ok(out)
+}
+
+/// (width, height, RGBA pixels). Wayland desktops are asked their own way first.
+fn screenshot(monitor: &Monitor) -> Result<(u32, u32, Vec<u8>), String> {
+    #[cfg(target_os = "linux")]
+    if let Some(shot) = super::super::linux::capture(monitor) {
+        return shot;
+    }
+    let (pos, size) = (monitor.position(), monitor.size());
+    // macOS reports screens in points, everything else in pixels.
+    let unit = if cfg!(target_os = "macos") { monitor.scale_factor() } else { 1.0 };
+    let center_x = (pos.x as f64 + size.width as f64 / 2.0) / unit;
+    let center_y = (pos.y as f64 + size.height as f64 / 2.0) / unit;
+    let screen = Screen::from_point(center_x as i32, center_y as i32).map_err(|e| e.to_string())?;
+    let image = screen.capture_image().map_err(|e| e.to_string())?;
+    Ok((image.width(), image.height(), image.into_raw()))
 }
