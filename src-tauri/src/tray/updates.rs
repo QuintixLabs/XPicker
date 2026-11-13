@@ -24,7 +24,7 @@ use tauri_plugin_updater::{Update, UpdaterExt};
 
 use super::notifications;
 use crate::{
-    picker::{self, window as picker_window, Frame},
+    picker::{self, overlay, Frame},
     settings::{self, Store, UpdateNotice},
     tray, window,
 };
@@ -182,7 +182,7 @@ fn notify_when_not_picking(app: &AppHandle, title: &str, body: String) {
 }
 
 fn is_picking(app: &AppHandle) -> bool {
-    picker_window::is_open(app) || app.state::<Frame>().is_starting()
+    overlay::is_open(app) || app.state::<Frame>().is_starting()
 }
 
 /// Linux .deb/.rpm installs need your password, so they're never automatic.

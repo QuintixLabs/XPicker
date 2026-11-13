@@ -34,9 +34,9 @@
         "installerIcon": "icons/app/icon.ico",
         "uninstallerIcon": "icons/app/icon.ico",
         "sidebarImage": "icons/installer/sidebar.bmp",
-        "installerHooks": "installer/hooks.nsh",
+        "installerHooks": "installer/windows/hooks.nsh",
         "languages": ["English"],
-        "customLanguageFiles": { "English": "installer/English.nsh" }
+        "customLanguageFiles": { "English": "installer/windows/English.nsh" }
       }
     }
   },

@@ -13,20 +13,19 @@ mod window;
 use std::time::Duration;
 use tauri::{AppHandle, Manager, RunEvent};
 
-use picker::shortcut;
 use tray::{notifications, startup, updates};
 use window::commands;
 
 fn main() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| picker::launch(app, false)))
-        .plugin(shortcut::plugin())
+        .plugin(picker::shortcut_plugin())
         .plugin(startup::plugin())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .manage(picker::Frame::default())
         .manage(updates::Pending::default())
-        .manage(picker::clipboard::Clipboard::default())
+        .manage(picker::colors::clipboard::Clipboard::default())
         .setup(|app| {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
@@ -44,7 +43,7 @@ fn main() {
             if !cfg!(debug_assertions) {
                 let _ = startup::set(handle, settings.start_with_computer);
             }
-            if let Err(err) = shortcut::apply(handle, &shortcut) {
+            if let Err(err) = picker::set_shortcut(handle, &shortcut) {
                 eprintln!("XPicker: couldn't register {shortcut}: {err}");
             }
             open_on_start(handle);

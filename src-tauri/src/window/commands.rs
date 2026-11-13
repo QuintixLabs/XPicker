@@ -11,7 +11,7 @@
 use tauri::{ipc::Response, AppHandle, State, WebviewWindow};
 
 use crate::{
-    picker::{self, clipboard::Clipboard, shortcut, Frame},
+    picker::{self, colors::clipboard::Clipboard, Frame},
     settings::{self, Data, Settings, Store},
     tray::{startup, updates},
 };
@@ -29,8 +29,8 @@ pub fn state(store: State<Store>) -> Data {
 pub async fn save_settings(app: AppHandle, store: State<'_, Store>, settings: Settings) -> Result<Data, String> {
     let previous = store.get().settings;
     if settings.shortcut != previous.shortcut {
-        if let Err(err) = shortcut::apply(&app, &settings.shortcut) {
-            let _ = shortcut::apply(&app, &previous.shortcut);
+        if let Err(err) = picker::set_shortcut(&app, &settings.shortcut) {
+            let _ = picker::set_shortcut(&app, &previous.shortcut);
             return Err(format!("That shortcut can't be used ({err})."));
         }
     }
@@ -60,9 +60,9 @@ pub async fn copy(clipboard: State<'_, Clipboard>, text: String) -> Result<(), S
 #[tauri::command]
 pub async fn pause_shortcut(app: AppHandle, store: State<'_, Store>, paused: bool) -> Result<(), String> {
     if paused {
-        shortcut::clear(&app)
+        picker::clear_shortcut(&app)
     } else {
-        shortcut::apply(&app, &store.get().settings.shortcut)
+        picker::set_shortcut(&app, &store.get().settings.shortcut)
     }
 }
 

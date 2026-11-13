@@ -1,5 +1,5 @@
 // ============================================================
-// capture.rs
+// picker/overlay/capture.rs
 // Takes a screenshot of the screen the mouse is on.
 // ============================================================
 

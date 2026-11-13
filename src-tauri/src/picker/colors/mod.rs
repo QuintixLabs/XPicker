@@ -1,8 +1,9 @@
 // ============================================================
-// color_formats.rs
-// Writes a color as HEX, RGB, RGBA, HSL or HSLA (used by the tray's
-// recent colors). Matches src/js/shared/color-formats.js.
+// picker/colors/mod.rs
+// Writes a color as HEX, RGB, RGBA, HSL or HSLA
 // ============================================================
+
+pub mod clipboard;
 
 pub fn format(hex: &str, index: usize) -> String {
     let n = u32::from_str_radix(hex, 16).unwrap_or(0);

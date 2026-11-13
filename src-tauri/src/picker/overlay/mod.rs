@@ -1,8 +1,10 @@
 // ============================================================
-// picker/window.rs
+// picker/overlay/mod.rs
 // The full-screen picker window. A new one is made for each pick
 // and closed after, so nothing stays in memory between picks.
 // ============================================================
+
+pub mod capture;
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tauri::{AppHandle, Manager, Monitor, WebviewWindow};

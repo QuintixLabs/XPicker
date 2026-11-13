@@ -26,7 +26,7 @@ export const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true 
  */
 export const shot = { loaded: false, data: null, width: 0, height: 0, scale: 1, cssWidth: 0, cssHeight: 0, room: null, bitmap: null };
 
-/** Size of the numbers in front of the pixels (see capture.rs). */
+/** Size of the numbers in front of the pixels (see picker/overlay/capture.rs). */
 export const HEADER = 36;
 
 let dirty = []; // screenshot-pixel areas drawn over last frame

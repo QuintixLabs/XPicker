@@ -15,7 +15,7 @@ pub mod startup;
 pub mod updates;
 
 use crate::{
-    picker::{self, clipboard::Clipboard, color_formats},
+    picker::{self, colors::{self, clipboard::Clipboard}},
     settings::Store,
     window::{self, logo},
 };
@@ -123,7 +123,7 @@ fn menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
 
     let recent = Submenu::with_id(app, "recent", "Recent colors", !data.history.is_empty())?;
     for entry in data.history.iter().take(RECENT_COUNT) {
-        let label = color_formats::format(&entry.hex, data.settings.format);
+        let label = colors::format(&entry.hex, data.settings.format);
         let item = IconMenuItem::with_id(app, format!("recent:{}", entry.hex), label, true, Some(swatch(&entry.hex)), None::<&str>)?;
         recent.append(&item)?;
     }
@@ -155,7 +155,7 @@ fn on_menu(app: &AppHandle, id: &str) {
 /// Copies a recent color in the current format, like clicking it in the window.
 fn copy_recent(app: &AppHandle, hex: &str) {
     let settings = app.state::<Store>().get().settings;
-    let value = color_formats::format(hex, settings.format);
+    let value = colors::format(hex, settings.format);
     if app.state::<Clipboard>().copy(&value).is_ok() && settings.notify {
         let (app, hex) = (app.clone(), hex.to_owned());
         std::thread::spawn(move || notifications::copied(&app, &value, &hex));
@@ -164,7 +164,7 @@ fn copy_recent(app: &AppHandle, hex: &str) {
 
 /// A 16×16 square of the color for the menu.
 fn swatch(hex: &str) -> Image<'static> {
-    let [r, g, b] = color_formats::rgb(hex);
+    let [r, g, b] = colors::rgb(hex);
     let pixels = [r, g, b, 255].repeat(16 * 16);
     Image::new_owned(pixels, 16, 16)
 }

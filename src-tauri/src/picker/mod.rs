@@ -1,17 +1,14 @@
 // ============================================================
 // picker/mod.rs
-// Picking a color: take a screenshot, open the picker, then copy,
-// remember and announce the color you chose.
+// Picking a color: the shortcut, taking a screenshot, opening the
+// picker, then copying, remembering and announcing the color you chose.
 // ============================================================
 
 // Windows are only ever created or closed from worker threads: doing it on the
 // UI thread inside a hotkey or tray callback freezes WebView2 on Windows.
 
-mod capture;
-pub mod clipboard;
-pub mod color_formats;
-pub mod shortcut;
-pub mod window;
+pub mod colors;
+pub mod overlay;
 
 use std::{
     error::Error,
@@ -19,14 +16,15 @@ use std::{
     thread,
     time::Duration,
 };
-use tauri::{AppHandle, Manager};
+use tauri::{plugin::TauriPlugin, AppHandle, Manager, Wry};
+use tauri_plugin_global_shortcut::{Builder, GlobalShortcutExt, ShortcutState};
 
 use crate::{
     settings::{self, Store},
     tray::{notifications, updates},
     window as main_window,
 };
-use clipboard::Clipboard;
+use colors::clipboard::Clipboard;
 
 /// Windows holds notification banners back while a full-screen window (the
 /// picker) is in front. This gives it a moment to notice the picker is gone.
@@ -51,6 +49,35 @@ impl Frame {
     pub fn is_starting(&self) -> bool {
         self.starting.load(Ordering::Acquire)
     }
+}
+
+// ------------------------------------------------------------
+// The shortcut (Ctrl+Shift+X by default), from anywhere
+// ------------------------------------------------------------
+
+pub fn shortcut_plugin() -> TauriPlugin<Wry> {
+    Builder::new()
+        .with_handler(|app, _shortcut, event| {
+            // Does nothing until the welcome screen is finished, so you set
+            // up your keys first.
+            let welcome = app.state::<Store>().get().settings.show_welcome;
+            if event.state() == ShortcutState::Pressed && !welcome {
+                start(app);
+            }
+        })
+        .build()
+}
+
+pub fn set_shortcut(app: &AppHandle, shortcut: &str) -> Result<(), String> {
+    clear_shortcut(app)?;
+    if shortcut.is_empty() {
+        return Ok(());
+    }
+    app.global_shortcut().register(shortcut).map_err(|e| e.to_string())
+}
+
+pub fn clear_shortcut(app: &AppHandle) -> Result<(), String> {
+    app.global_shortcut().unregister_all().map_err(|e| e.to_string())
 }
 
 // ------------------------------------------------------------
@@ -100,7 +127,7 @@ fn run(app: &AppHandle, hide_main: bool) {
     if state.starting.swap(true, Ordering::AcqRel) {
         return;
     }
-    if !window::is_open(app) {
+    if !overlay::is_open(app) {
         if hide_main && main_window::is_visible(app) {
             main_window::hide(app);
             state.restore_main.store(true, Ordering::Relaxed);
@@ -121,9 +148,9 @@ fn open(app: &AppHandle) -> Result<(), Box<dyn Error>> {
         .or(app.primary_monitor()?)
         .ok_or("no monitor found")?;
 
-    let frame = capture::grab(&monitor, cursor)?;
+    let frame = overlay::capture::grab(&monitor, cursor)?;
     *app.state::<Frame>().data.lock().unwrap() = Some(frame);
-    window::open(app, &monitor)?;
+    overlay::open(app, &monitor)?;
     Ok(())
 }
 
@@ -144,7 +171,7 @@ pub fn finish(app: &AppHandle, value: &str, hex: &str, format: usize) -> Result<
 
     // Close the picker first: while it's on screen, Windows would send the
     // notification straight to the notification center without showing it.
-    window::close(app);
+    overlay::close(app);
     restore_main(app);
     if copied.is_ok() && data.settings.notify {
         thread::sleep(AFTER_PICKER_CLOSES);
@@ -161,14 +188,14 @@ pub fn finish(app: &AppHandle, value: &str, hex: &str, format: usize) -> Result<
 
 /// Cancel pressed in the picker.
 pub fn cancel(app: &AppHandle) {
-    window::close(app);
+    overlay::close(app);
     restore_main(app);
 }
 
 /// "Open XPicker" pressed in the picker: show the app, then close the picker.
 pub fn open_app(app: &AppHandle) {
     let _ = main_window::open(app); // first, so there's never a moment with no window
-    window::close(app);
+    overlay::close(app);
     restore_main(app);
 }
 
