@@ -30,10 +30,9 @@ use crate::{
 };
 use colors::clipboard::Clipboard;
 
-/// Windows and GNOME hold notification banners back while a full-screen window
-/// (the picker) is in front; GNOME drops the "Copied" one instead of showing it
-/// later. This gives them a moment to notice the picker is gone.
-const AFTER_PICKER_CLOSES: Duration = Duration::from_millis(if cfg!(target_os = "linux") { 900 } else { 300 });
+/// Windows holds notification banners back while a full-screen window (the
+/// picker) is in front. This gives it a moment to notice the picker is gone.
+const AFTER_PICKER_CLOSES: Duration = Duration::from_millis(300);
 
 #[derive(Default)]
 pub struct Frame {

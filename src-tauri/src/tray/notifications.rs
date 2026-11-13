@@ -162,27 +162,53 @@ mod platform {
         }
         let _ = app_id;
 
-        let mut notification = notify_rust::Notification::new();
-        notification.appname("XPicker").summary(title).body(body);
-
-        #[cfg(all(unix, not(target_os = "macos")))]
+        #[cfg(target_os = "linux")]
         {
-            if let Some(path) = &image {
-                notification.image_path(&path.to_string_lossy());
+            let _ = (COPIED_LIFETIME_SECS, SystemTime::now());
+            let shown = linux::notify(title, body, image.as_deref(), transient);
+            if std::env::var_os("XPICKER_DEBUG").is_some() {
+                eprintln!("XPicker: notification {title}: {shown:?}");
             }
-            // Shown, but not kept in the notification history. Not on GNOME: it
-            // drops those if they come while it still thinks the picker is up.
-            let gnome = std::env::var("XDG_CURRENT_DESKTOP").is_ok_and(|d| d.to_lowercase().contains("gnome"));
-            if transient && !gnome {
-                notification.hint(notify_rust::Hint::Transient(true));
-            }
+            return shown;
         }
-        let _ = (image, transient, COPIED_LIFETIME_SECS, SystemTime::now());
 
-        let shown = notification.show().map(|_| ()).map_err(|e| e.to_string());
-        if std::env::var_os("XPICKER_DEBUG").is_some() {
-            eprintln!("XPicker: notification {title}: {:?}", shown);
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = (image, transient, COPIED_LIFETIME_SECS, SystemTime::now());
+            notify_rust::Notification::new().appname("XPicker").summary(title).body(body).show().map(|_| ()).map_err(|e| e.to_string())
         }
-        shown
+    }
+}
+
+/// Linux: straight to the notification service, over one connection kept open
+/// while XPicker runs. GNOME files an app's notifications under the connection
+/// that sent them and removes them once it closes, before they even pop up;
+/// a new connection per notification (what libraries usually do) loses them.
+#[cfg(target_os = "linux")]
+mod linux {
+    use std::{collections::HashMap, path::Path, sync::OnceLock};
+    use zbus::{blocking::Connection, zvariant::Value};
+
+    pub fn notify(title: &str, body: &str, image: Option<&Path>, transient: bool) -> Result<(), String> {
+        static BUS: OnceLock<Option<Connection>> = OnceLock::new();
+        let bus = BUS.get_or_init(|| Connection::session().ok()).as_ref().ok_or("no session bus")?;
+        let mut hints: HashMap<&str, Value> = HashMap::new();
+        if let Some(path) = image {
+            hints.insert("image-path", Value::from(path.to_string_lossy().into_owned()));
+        }
+        if transient {
+            // Shown, but not kept in the notification history.
+            hints.insert("transient", Value::from(true));
+        }
+        let actions: Vec<&str> = Vec::new();
+        bus.call_method(
+            Some("org.freedesktop.Notifications"),
+            "/org/freedesktop/Notifications",
+            Some("org.freedesktop.Notifications"),
+            "Notify",
+            &("XPicker", 0u32, "", title, body, actions, hints, -1i32),
+        )
+        .map(|_| ())
+        .map_err(|e| e.to_string())
     }
 }
