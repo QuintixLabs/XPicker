@@ -2,14 +2,14 @@
 // window/setup.js
 // GNOME's one-time setup (a small extension, so picking doesn't ask
 // each time or play the camera sound): a note with a Set up button on
-// the welcome screen and the Colors page.
+// the welcome screen and the Colors page, like Blip's.
 // ============================================================
 
 import { $$, invoke } from '../core/state.js';
 import { reveal } from './reveal.js';
 
-const TEXT = 'XPicker needs a quick one-time setup on GNOME, so it can pick colors without asking every time. Click Set up.';
-const DONE = 'All set. Log out and back in once to finish.';
+const TEXT = 'XPicker needs a quick one-time setup on GNOME. Click Set up.';
+const DONE = 'All set. Log out and back in once, and XPicker is ready.';
 
 function fill(note) {
   if (note.querySelector('[data-allow]')) return;
@@ -20,27 +20,27 @@ function fill(note) {
       <span class="when-ready">Set up</span><span class="when-waiting">Waiting…</span>
     </button>
     <div class="reveal notice-error"><div class="reveal-inner"><span class="notice-error-text"></span></div></div>`;
+  note.querySelector('.notice-text').textContent = TEXT;
 }
 
-/** state: "" (nothing to do), "needed" or "login". Until it's set up, the
- *  welcome screen waits for it. */
-function show(state, error = '') {
-  document.documentElement.classList.toggle('needs-setup', state === 'needed');
-  for (const el of $$('.welcome .step-actions')) el.inert = state === 'needed';
+/** Shows the note until GNOME runs the extension; the welcome screen waits for
+ *  it. `message` goes under it (what to do next, or what went wrong). */
+function show(needed, message = '') {
+  document.documentElement.classList.toggle('needs-setup', needed);
+  for (const el of $$('.welcome .step-actions')) el.inert = needed;
   for (const wrap of $$('[data-setup]')) {
     const note = wrap.querySelector('.notice');
-    if (state) {
+    if (needed) {
       fill(note);
-      note.querySelector('.notice-text').textContent = state === 'login' ? DONE : TEXT;
-      note.querySelector('[data-allow]').hidden = state === 'login';
-      note.querySelector('.notice-error-text').textContent = error;
-      reveal(note.querySelector('.notice-error'), Boolean(error));
+      note.querySelector('.notice-error-text').textContent = message;
+      reveal(note.querySelector('.notice-error'), Boolean(message));
     }
-    reveal(wrap, Boolean(state));
+    reveal(wrap, needed);
   }
 }
 
-show(await invoke('desktop_setup').catch(() => ''));
+// "" once GNOME runs the extension (or off GNOME); otherwise it still needs it.
+show(Boolean(await invoke('desktop_setup').catch(() => '')));
 
 document.addEventListener('click', async (e) => {
   if (!e.target.closest('[data-allow]')) return;
@@ -49,11 +49,13 @@ document.addEventListener('click', async (e) => {
     b.disabled = true;
     b.classList.add('is-waiting');
   }
+  let message = '';
   try {
-    show(await invoke('desktop_set_up'));
+    if ((await invoke('desktop_set_up')) === 'login') message = DONE;
   } catch (err) {
-    show('needed', String(err));
+    message = String(err);
   }
+  show(Boolean(await invoke('desktop_setup').catch(() => '')), message);
   for (const b of buttons) {
     b.disabled = false;
     b.classList.remove('is-waiting');
