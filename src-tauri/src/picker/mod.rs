@@ -190,6 +190,9 @@ pub fn finish(app: &AppHandle, value: &str, hex: &str, format: usize) -> Result<
     frame.finishing.store(true, Ordering::Release);
 
     let copied = app.state::<Clipboard>().copy(value);
+    if std::env::var_os("XPICKER_DEBUG").is_some() {
+        eprintln!("XPicker: copied {value}: {copied:?}");
+    }
     let data = app.state::<Store>().update(app, |data| {
         settings::remember(data, hex);
         data.settings.format = format;

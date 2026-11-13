@@ -168,6 +168,10 @@ mod platform {
         }
         let _ = (image, transient, COPIED_LIFETIME_SECS, SystemTime::now());
 
-        notification.show().map(|_| ()).map_err(|e| e.to_string())
+        let shown = notification.show().map(|_| ()).map_err(|e| e.to_string());
+        if std::env::var_os("XPICKER_DEBUG").is_some() {
+            eprintln!("XPicker: notification {title}: {:?}", shown);
+        }
+        shown
     }
 }

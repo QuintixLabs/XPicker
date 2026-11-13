@@ -33,7 +33,8 @@ fn connection() -> Option<&'static Connection> {
     static BUS: OnceLock<Option<Connection>> = OnceLock::new();
     BUS.get_or_init(|| {
         let bus = Connection::session().ok()?;
-        let _ = bus.call_method(Some(DESKTOP), PATH, Some("org.freedesktop.host.portal.Registry"), "Register", &(APP_ID, HashMap::<&str, Value>::new()));
+        let registered = bus.call_method(Some(DESKTOP), PATH, Some("org.freedesktop.host.portal.Registry"), "Register", &(APP_ID, HashMap::<&str, Value>::new()));
+        debug(&format!("told the portal who XPicker is: {:?}", registered.map(|_| ())));
         Some(bus)
     })
     .as_ref()
@@ -50,7 +51,18 @@ fn ask(bus: &Connection, call: impl FnOnce(&str) -> zbus::Result<zbus::message::
     let mut answers = request.receive_signal("Response").ok()?;
     call(&token).map_err(|e| eprintln!("XPicker: the portal said no: {e}")).ok()?;
     let (code, results): (u32, HashMap<String, OwnedValue>) = answers.next()?.body().deserialize().ok()?;
+    if code != 0 {
+        // 1: you said no, 2: it ended some other way.
+        debug(&format!("the portal answered {code} (not 0, so no)"));
+    }
     (code == 0).then_some(results)
+}
+
+/// XPICKER_DEBUG=1 prints each step, for testing.
+fn debug(text: &str) {
+    if std::env::var_os("XPICKER_DEBUG").is_some() {
+        eprintln!("XPicker: {text}");
+    }
 }
 
 // ------------------------------------------------------------
@@ -126,6 +138,7 @@ fn bind(app: &AppHandle, trigger: String) {
     if let Some((old, _)) = SESSION.lock().unwrap().take() {
         let _ = bus.call_method(Some(DESKTOP), old.as_str(), Some("org.freedesktop.portal.Session"), "Close", &());
     }
+    debug(&format!("asking for the shortcut {trigger}"));
     let Some(created) = ask(bus, |token| {
         let options = HashMap::from([("handle_token", Value::from(token)), ("session_handle_token", Value::from(token))]);
         bus.call_method(Some(DESKTOP), PATH, interface, "CreateSession", &(options,))
@@ -139,6 +152,7 @@ fn bind(app: &AppHandle, trigger: String) {
         let options = HashMap::from([("handle_token", Value::from(token))]);
         bus.call_method(Some(DESKTOP), PATH, interface, "BindShortcuts", &(&session, shortcuts, "", options))
     });
+    debug(&format!("shortcut {}", if bound.is_some() { "ready" } else { "not set up" }));
     if bound.is_some() {
         *SESSION.lock().unwrap() = Some((session, trigger));
         listen(app);
@@ -163,6 +177,7 @@ fn listen(app: &AppHandle) {
         let _ = thread::Builder::new().name("shortcut".into()).spawn(move || {
             for message in activations.flatten() {
                 let Ok((_, id, _, _)) = message.body().deserialize::<(OwnedObjectPath, String, u64, HashMap<String, OwnedValue>)>() else { continue };
+                debug(&format!("shortcut pressed: {id}"));
                 if id == "pick" && !PAUSED.load(Ordering::Relaxed) {
                     crate::picker::shortcut_pressed(&app);
                 }
