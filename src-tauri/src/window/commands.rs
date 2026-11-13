@@ -152,6 +152,24 @@ pub fn open_screen_settings() -> Result<(), String> {
     Ok(())
 }
 
+/// GNOME: what's left to set up for screenshots without asking ("" for
+/// nothing, "needed", or "login" once only logging out and back in is left).
+#[tauri::command]
+pub async fn desktop_setup() -> &'static str {
+    #[cfg(target_os = "linux")]
+    return picker::linux::setup_state();
+    #[cfg(not(target_os = "linux"))]
+    ""
+}
+
+#[tauri::command]
+pub async fn desktop_set_up() -> Result<&'static str, String> {
+    #[cfg(target_os = "linux")]
+    return picker::linux::set_up();
+    #[cfg(not(target_os = "linux"))]
+    Ok("")
+}
+
 // ------------------------------------------------------------
 // Updates
 // ------------------------------------------------------------

@@ -43,6 +43,23 @@ pub fn capture(monitor: &Monitor) -> Option<Result<(u32, u32, Vec<u8>), String>>
     Some(wayland::capture(left, top, width, height))
 }
 
+/// When XPicker starts.
+pub fn start() {
+    if on_wayland() {
+        wayland::start();
+    }
+}
+
+/// For Settings: what's left to set up on this desktop ("" for nothing,
+/// "needed", or "login" once only logging out and back in is left).
+pub fn setup_state() -> &'static str {
+    if on_wayland() { wayland::setup_state() } else { "" }
+}
+
+pub fn set_up() -> Result<&'static str, String> {
+    if on_wayland() { wayland::set_up() } else { Ok("") }
+}
+
 /// The picker was just shown: some desktops need help covering the screen.
 pub fn cover_screen() {
     if on_wayland() {

@@ -85,3 +85,35 @@ $('#open-folder').addEventListener('click', () => invoke('open_settings_folder')
 for (const button of $$('[data-link]')) {
   button.addEventListener('click', () => invoke('open_link', { name: button.dataset.link }));
 }
+
+// ------------------------------------------------------------
+// GNOME: the one-time setup for picking without asking
+// ------------------------------------------------------------
+
+const setup = $('#desktop-setup');
+const setupText = $('#desktop-setup-text');
+const setupButton = $('#desktop-setup-button');
+const SETUP_TEXT = {
+  needed: 'Set up once, and GNOME stops asking before each pick and playing the camera sound.',
+  login: 'All set. Log out and back in once to finish.',
+};
+
+/** "" hides it: nothing to set up on this system. */
+function showSetup(state) {
+  setup.hidden = !state;
+  if (!state) return;
+  setupText.textContent = SETUP_TEXT[state];
+  setupButton.hidden = state === 'login';
+}
+
+setupButton.addEventListener('click', async () => {
+  setupButton.disabled = true;
+  try {
+    showSetup(await invoke('desktop_set_up'));
+  } catch (err) {
+    setupText.textContent = String(err);
+  }
+  setupButton.disabled = false;
+});
+
+invoke('desktop_setup').then(showSetup);

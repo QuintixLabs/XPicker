@@ -43,6 +43,8 @@ fn main() {
             app.manage(store);
 
             notifications::register(handle);
+            #[cfg(target_os = "linux")]
+            picker::linux::start();
             tray::create(handle)?;
             // Keep the system's "start with computer" in step with the setting, pointing
             // at this copy of XPicker. Not from a dev build, which isn't the installed one.
@@ -75,6 +77,8 @@ fn main() {
             commands::open_settings_folder,
             commands::screen_permission,
             commands::open_screen_settings,
+            commands::desktop_setup,
+            commands::desktop_set_up,
         ])
         .build(tauri::generate_context!())
         .expect("failed to start XPicker");

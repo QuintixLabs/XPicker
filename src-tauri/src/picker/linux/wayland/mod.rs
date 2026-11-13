@@ -1,8 +1,9 @@
 // ============================================================
 // picker/linux/wayland/mod.rs
 // Picks the way for this desktop. Screenshots: KDE through KWin,
-// Hyprland and other wlroots desktops directly, and the portal for the
-// rest. The shortcut: a Hyprland binding, or a GNOME custom shortcut.
+// GNOME through XPicker's extension, Hyprland and other wlroots desktops
+// directly, and the portal for the rest. The shortcut: a Hyprland
+// binding, or a GNOME custom shortcut.
 // ============================================================
 
 mod gnome;
@@ -38,7 +39,8 @@ pub fn cursor() -> Option<(f64, f64)> {
     match desktop() {
         Desktop::Hyprland => hyprland::cursor(),
         Desktop::Kde => kde::cursor(),
-        _ => None,
+        Desktop::Gnome => gnome::cursor(),
+        Desktop::Other => None,
     }
 }
 
@@ -47,7 +49,8 @@ pub fn capture(left: i32, top: i32, width: u32, height: u32) -> Result<(u32, u32
     let direct = match desktop() {
         // No prompt for the .deb and .rpm (their desktop file allows it).
         Desktop::Kde => kde::capture(left, top, width, height),
-        Desktop::Gnome => None,
+        // No prompt and no camera sound once the extension is set up.
+        Desktop::Gnome => gnome::capture(left, top, width, height),
         // Hyprland, Sway, river…: no prompt.
         _ => wlroots::capture(left, top, width, height),
     };
@@ -55,6 +58,22 @@ pub fn capture(left: i32, top: i32, width: u32, height: u32) -> Result<(u32, u32
         Some(shot) => Ok(shot),
         None => portal::capture(left, top, width, height),
     }
+}
+
+/// When XPicker starts: GNOME's extension files are kept up to date.
+pub fn start() {
+    if desktop() == Desktop::Gnome {
+        gnome::install();
+    }
+}
+
+/// For Settings: what's left to set up on this desktop ("" for nothing).
+pub fn setup_state() -> &'static str {
+    if desktop() == Desktop::Gnome { gnome::state() } else { "" }
+}
+
+pub fn set_up() -> Result<&'static str, String> {
+    if desktop() == Desktop::Gnome { gnome::set_up() } else { Ok("") }
 }
 
 /// The picker was just shown: make sure it covers the whole screen.

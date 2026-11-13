@@ -161,8 +161,10 @@ mod platform {
             if let Some(path) = &image {
                 notification.image_path(&path.to_string_lossy());
             }
-            if transient {
-                // Shown, but not kept in the notification history.
+            // Shown, but not kept in the notification history. Not on GNOME: it
+            // drops those if they come while it still thinks the picker is up.
+            let gnome = std::env::var("XDG_CURRENT_DESKTOP").is_ok_and(|d| d.to_lowercase().contains("gnome"));
+            if transient && !gnome {
                 notification.hint(notify_rust::Hint::Transient(true));
             }
         }

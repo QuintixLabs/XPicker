@@ -1,5 +1,5 @@
 // ============================================================
-// picker/linux/wayland/gnome.rs
+// picker/linux/wayland/gnome/shortcut.rs
 // GNOME: the shortcut as one of GNOME's own custom shortcuts
 // (Settings → Keyboard → Custom Shortcuts). GNOME runs
 // "xpicker --pick", and the running XPicker opens the picker.
@@ -20,7 +20,7 @@ static WRITTEN: Mutex<Option<String>> = Mutex::new(None);
 /// An empty shortcut (none, or a new key being chosen) keeps the entry but
 /// leaves it without a key.
 pub fn set_shortcut(shortcut: &str) {
-    let binding = super::keys_of(shortcut).map(|(mods, key)| accelerator(&mods, &key)).unwrap_or_default();
+    let binding = super::super::keys_of(shortcut).map(|(mods, key)| accelerator(&mods, &key)).unwrap_or_default();
     let mut written = WRITTEN.lock().unwrap();
     if written.as_deref() == Some(binding.as_str()) {
         return;

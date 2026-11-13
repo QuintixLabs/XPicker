@@ -1,0 +1,8 @@
+{
+  "uuid": "xpicker@quintixlabs.com",
+  "name": "XPicker",
+  "description": "Lets the XPicker app see the screen and the cursor on GNOME, without asking each time. Installed and used by XPicker; only XPicker can use it.",
+  "shell-version": ["45", "46", "47", "48", "49", "50", "51", "52"],
+  "url": "https://github.com/QuintixLabs/XPicker",
+  "version": 1
+}
