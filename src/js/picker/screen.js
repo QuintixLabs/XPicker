@@ -77,18 +77,34 @@ export function pixelAt(x, y) {
 }
 
 /**
- * The screenshot pixel under a point in css px. Measured against the window as
- * it really is: the screenshot is stretched to fill it, and the system's idea
- * of the screen size can be off (Linux desktops with scaling). The tiny extra
- * keeps a point sitting exactly on a pixel's edge (like 2.9999… for 3) on that pixel.
+ * The screenshot pixel under a point in css px. The tiny extra keeps a point
+ * sitting exactly on a pixel's edge (like 2.9999… for 3) on that pixel.
  */
 export function pixelUnder(point) {
-  const sx = shot.width / (canvas.clientWidth || shot.cssWidth);
-  const sy = shot.height / (canvas.clientHeight || shot.cssHeight);
   return {
-    x: Math.min(Math.max(Math.floor(point.x * sx + 1e-6), 0), shot.width - 1),
-    y: Math.min(Math.max(Math.floor(point.y * sy + 1e-6), 0), shot.height - 1),
+    x: Math.min(Math.floor(point.x * shot.scale + 1e-6), shot.width - 1),
+    y: Math.min(Math.floor(point.y * shot.scale + 1e-6), shot.height - 1),
   };
+}
+
+/**
+ * The window as it really is. The scale comes from the system's idea of the
+ * screen, which some Linux desktops get wrong (with scaling); once the window
+ * covers the screen, its own width is the truth. True if anything changed, so
+ * the layers can be set up again.
+ */
+export function fit() {
+  const width = canvas.clientWidth;
+  if (!shot.loaded || !width || Math.abs(width - shot.cssWidth) < 0.5) return false;
+  const scale = shot.width / width;
+  const room = shot.room;
+  Object.assign(shot, {
+    scale,
+    cssWidth: width,
+    cssHeight: shot.height / scale,
+    room: { left: (room.left * shot.scale) / scale, top: (room.top * shot.scale) / scale, right: (room.right * shot.scale) / scale, bottom: (room.bottom * shot.scale) / scale },
+  });
+  return true;
 }
 
 // ------------------------------------------------------------

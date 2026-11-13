@@ -87,6 +87,11 @@ pub async fn frame(frame: State<'_, Frame>) -> Result<Response, String> {
 #[tauri::command]
 pub async fn ready(window: WebviewWindow) {
     let _ = window.show();
+    // Some Linux desktops (Hyprland) ignore fullscreen asked for before the
+    // window appears, and tile it instead. Asking again once it's there works.
+    if cfg!(target_os = "linux") {
+        let _ = window.set_fullscreen(true);
+    }
     let _ = window.set_always_on_top(true);
     let _ = window.set_focus();
     // The window being in front isn't enough; keys go to the focused page.

@@ -47,6 +47,18 @@ async function begin() {
   loupe.prepare();
   crosshair.prepare();
 
+  // Linux: the window only covers the screen once the desktop makes it
+  // fullscreen, and then its real size can differ from what was reported.
+  if (screen.LINUX) {
+    addEventListener('resize', () => {
+      if (!screen.fit()) return;
+      hints.prepare(state.settings);
+      loupe.prepare();
+      crosshair.prepare();
+      screen.request();
+    });
+  }
+
   screen.request();
   await invoke('ready');
 }
