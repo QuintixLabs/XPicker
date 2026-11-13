@@ -8,7 +8,8 @@
 import { $$, invoke } from '../core/state.js';
 import { reveal } from './reveal.js';
 
-const TEXT = 'XPicker needs a quick one-time setup on GNOME. Click Set up.';
+// Short enough for one line next to the button; "Set up" never splits.
+const TEXT = 'XPicker needs a one-time setup on GNOME. Click Set up.';
 const DONE = 'All set. Log out and back in once, and XPicker is ready.';
 
 function fill(note) {

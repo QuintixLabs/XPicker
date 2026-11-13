@@ -13,7 +13,11 @@
   color: var(--text);
   font-size: 13px;
   line-height: 1.45;
-  text-align: left;
+}
+
+/* On a page (not the welcome screen): room before what follows. */
+.view:not(.welcome) > [data-setup] .notice {
+  margin: 0 0 16px;
 }
 
 .notice-action {
