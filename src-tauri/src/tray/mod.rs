@@ -1,18 +1,7 @@
 // ============================================================
 // tray/mod.rs
-// The tray icon next to the clock and its menu. Click opens XPicker
-// (click again to close it); right-click shows the menu.
+// The tray icon next to the clock and its menu.
 // ============================================================
-
-//   Open XPicker
-//   Settings
-//   ─────────
-//   Pick color            Ctrl+Shift+X
-//   Recent colors       ▸ (last 5, each with its color; click to copy)
-//   ─────────
-//   Exit
-//
-// The menu is rebuilt whenever settings or recent colors change (see Store::update).
 
 use tauri::{
     image::Image,

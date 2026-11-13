@@ -1,7 +1,6 @@
 // ============================================================
 // main.rs
 // Starts XPicker: the tray icon, the shortcut and the first window.
-// XPicker by Quintix Labs, licensed under the GPL-3.0.
 // ============================================================
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -34,7 +33,6 @@ fn main() {
 
             let handle = app.handle();
             let store = settings::Store::load(handle);
-            settings::remove_old_cache(handle);
             let settings = store.get().settings;
             let shortcut = settings.shortcut.clone();
             app.manage(store);

@@ -1,7 +1,6 @@
 /* ============================================================
    window/update-bar.css
-   The "XPicker 1.0.9 is ready. Restart to update now?" bar at the
-   top of the page.
+   The bar at the top of the page saying an update is ready.
    ============================================================ */
 
 /* Grows open and shut from zero height, so the page below moves smoothly. */

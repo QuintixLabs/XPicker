@@ -1,11 +1,7 @@
 // ============================================================
 // tray/notifications.rs
-// XPicker's notifications ("Copied to clipboard", "XPicker was
-// updated"), shown as real system notifications.
+// XPicker's notifications
 // ============================================================
-
-// "Copied" ones show the picked color as their image (Windows, most Linux) and
-// remove themselves from the notification center so they don't pile up.
 
 use std::{path::PathBuf, time::SystemTime};
 use tauri::{AppHandle, Manager};
