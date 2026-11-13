@@ -5,8 +5,8 @@ labels: ["enhancement"]
 body:
   - type: checkboxes
     attributes:
-      label: Already searched for help? *
-      description: Before asking for help, check if a similar issue or solution already exists in the open or closed issues.
+      label: Already suggested? *
+      description: Check if someone already asked for this in the open or closed issues.
       options:
         - label: I have searched the existing open and closed issues.
           required: true
