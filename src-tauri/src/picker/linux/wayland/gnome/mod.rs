@@ -55,15 +55,19 @@ fn folder() -> Option<PathBuf> {
 
 /// Puts the extension's files in place, or brings them up to date (an update
 /// of XPicker can change them). GNOME reads new files at the next login.
+/// Next to them goes where XPicker is: once it's gone (uninstalled), the
+/// extension removes itself and the shortcut at the next login.
 pub fn install() -> bool {
     let Some(dir) = folder() else { return false };
     if std::fs::create_dir_all(&dir).is_err() {
         return false;
     }
-    FILES.iter().all(|(name, text)| {
+    let write = |name: &str, text: &str| {
         let path = dir.join(name);
-        std::fs::read_to_string(&path).is_ok_and(|now| now == *text) || std::fs::write(&path, text).is_ok()
-    })
+        std::fs::read_to_string(&path).is_ok_and(|now| now == text) || std::fs::write(&path, text).is_ok()
+    };
+    let program = std::env::var("APPIMAGE").ok().or_else(|| std::env::current_exe().ok().map(|p| p.to_string_lossy().into_owned())).unwrap_or_default();
+    FILES.iter().all(|(name, text)| write(name, text)) && write("xpicker-path", &program)
 }
 
 /// GNOME is running the extension right now.

@@ -1,7 +1,8 @@
 // ============================================================
 // picker/linux/wayland/gnome/extension/extension.js
 // Runs inside GNOME Shell. Lets XPicker take a screenshot (no prompt,
-// no camera sound) and see where the cursor is.
+// no camera sound) and see where the cursor is. Once XPicker is
+// uninstalled, removes itself and XPicker's shortcut at the next login.
 // ============================================================
 
 import Gio from 'gi://Gio';
@@ -71,14 +72,65 @@ class Service {
   }
 }
 
+// ------------------------------------------------------------
+// After XPicker is uninstalled
+// ------------------------------------------------------------
+
+const SHORTCUTS = 'org.gnome.settings-daemon.plugins.media-keys';
+const SHORTCUT_PATH = '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/xpicker/';
+
+/** Settings by name, or null if this system doesn't have them. */
+function settings(schema, path) {
+  if (!Gio.SettingsSchemaSource.get_default().lookup(schema, true)) return null;
+  return path ? new Gio.Settings({ schema_id: schema, path }) : new Gio.Settings({ schema_id: schema });
+}
+
+/** XPicker saves where it is next to this file. True when that's gone. */
+function xpickerGone(folder) {
+  try {
+    const [, bytes] = GLib.file_get_contents(GLib.build_filenamev([folder, 'xpicker-path']));
+    const program = new TextDecoder().decode(bytes).trim();
+    return program !== '' && !GLib.file_test(program, GLib.FileTest.EXISTS);
+  } catch {
+    return false; // not saved (yet): leave everything as it is
+  }
+}
+
+/** Removes the shortcut, this extension from GNOME's list, and its files. */
+function cleanUp(uuid, folder) {
+  const keys = settings(SHORTCUTS);
+  if (keys) {
+    keys.set_strv('custom-keybindings', keys.get_strv('custom-keybindings').filter((p) => p !== SHORTCUT_PATH));
+  }
+  const entry = settings(`${SHORTCUTS}.custom-keybinding`, SHORTCUT_PATH);
+  for (const key of ['name', 'command', 'binding']) entry?.reset(key);
+
+  const shell = settings('org.gnome.shell');
+  if (shell) shell.set_strv('enabled-extensions', shell.get_strv('enabled-extensions').filter((id) => id !== uuid));
+
+  for (const name of ['metadata.json', 'extension.js', 'xpicker-path']) {
+    try {
+      Gio.File.new_for_path(GLib.build_filenamev([folder, name])).delete(null);
+    } catch {}
+  }
+  try {
+    Gio.File.new_for_path(folder).delete(null);
+  } catch {}
+}
+
 export default class XPickerExtension extends Extension {
   enable() {
+    if (xpickerGone(this.path)) {
+      cleanUp(this.uuid, this.path);
+      return;
+    }
     this._service = Gio.DBusExportedObject.wrapJSObject(INTERFACE, new Service());
     this._service.export(Gio.DBus.session, PATH);
     this._name = Gio.bus_own_name_on_connection(Gio.DBus.session, NAME, Gio.BusNameOwnerFlags.NONE, null, null);
   }
 
   disable() {
+    if (!this._service) return;
     Gio.bus_unown_name(this._name);
     this._service.unexport();
     this._service = null;
