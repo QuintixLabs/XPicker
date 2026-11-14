@@ -90,12 +90,12 @@ git push origin dev
    npm version 1.1.0 --no-git-tag-version
    ```
 
-   This changes `package.json` and `package-lock.json`, and copies the number into `src-tauri/Cargo.toml` and `Cargo.lock` (`scripts/sync-version.mjs` does that part). The app, the installer and the updates all read the version from `package.json`.
+   This changes `package.json` and `package-lock.json`, and copies the number into `src-tauri/Cargo.toml`, `Cargo.lock` and the winget manifests in `packaging/winget` (`scripts/sync-version.mjs` does that part). The app, the installer and the updates all read the version from `package.json`.
 
 2. Commit it on `dev`, then make `main` the same as `dev`:
 
    ```sh
-   git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock
+   git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock packaging/winget
    git commit -m "chore: release 1.1.0"
    git push origin dev
    git push origin dev:main
@@ -103,9 +103,17 @@ git push origin dev
 
 3. On GitHub, open **Releases**. A draft called `v1.1.0` shows up with a downloads table, the commits sorted under headings, and the contributors. Windows, macOS and Linux get built into it, which takes around 15 minutes. Users get nothing yet.
 4. Edit the notes. Remove anything that doesn't matter to users.
-5. Click **Publish release**. This creates the tag, and installed copies now find the update.
+5. Click **Publish release**. This creates the tag, and installed copies now find the update. It also sends the release to winget, see below.
 
 Then check it: install the previous version, open **Settings → Updates**, click **Check for updates**, and make sure it updates and shows the new number.
+
+## winget
+
+People can install XPicker with `winget install QuintixLabs.XPicker`. The manifests live in `packaging/winget`, and `npm version` keeps their version in step.
+
+Publishing a release runs the **Winget** workflow. It adds the installer's hash and the release date, then opens a pull request to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs). Microsoft's checks and a moderator approve it, usually within a few days. Nothing to do unless the pull request gets a comment asking for changes.
+
+It needs the `WINGET_TOKEN` secret: a classic GitHub token with the `public_repo` scope, from the account the pull request should come from. To send a release again, open **Actions**, then **Winget**, and click **Run workflow** with its tag, like `v1.1.0`.
 
 ## If the workflow fails
 

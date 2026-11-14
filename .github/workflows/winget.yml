@@ -1,0 +1,55 @@
+# When a release is published, sends it to winget as a pull request to
+# microsoft/winget-pkgs. packaging/winget already has the version (npm version
+# keeps it in step); this adds the installer's hash and the release date.
+
+name: Winget
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The published release to send, like v2.3.0
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: windows-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Add the hash and date
+        shell: pwsh
+        run: |
+          $version = $env:TAG.TrimStart('v')
+          gh release download $env:TAG --pattern "*_${version}_x64-setup.exe" --dir setup
+          $setup = Get-ChildItem setup -Filter *.exe | Select-Object -First 1
+          if (-not $setup) { throw "The release $env:TAG has no Windows installer." }
+          $hash = (Get-FileHash $setup.FullName -Algorithm SHA256).Hash
+          $date = (gh release view $env:TAG --json publishedAt --jq .publishedAt).Substring(0, 10)
+
+          New-Item -ItemType Directory manifests | Out-Null
+          foreach ($file in Get-ChildItem packaging/winget) {
+            $text = (Get-Content $file.FullName -Raw) -replace "`r`n", "`n"
+            if ($text -notmatch "(?m)^PackageVersion: $([regex]::Escape($version))$") {
+              throw "$($file.Name) isn't at $version. Was the version changed with npm version?"
+            }
+            $text = $text -replace '(?m)^AppsAndFeaturesEntries:', "ReleaseDate: $date`nAppsAndFeaturesEntries:"
+            $text = $text -replace '(?m)^(\s*)(InstallerUrl: .*)$', "`$1`$2`n`$1InstallerSha256: $hash"
+            [IO.File]::WriteAllText("$PWD/manifests/$($file.Name)", $text)
+          }
+
+      - name: Send it to winget
+        shell: pwsh
+        env:
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          Invoke-WebRequest https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          ./wingetcreate.exe submit --token $env:WINGET_TOKEN manifests
