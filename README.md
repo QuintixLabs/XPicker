@@ -13,7 +13,11 @@
 ## 📦 Installation
 
 ### 1. Download `🏳️‍🌈 XPicker`
-Get it from the [Releases Page](https://github.com/QuintixLabs/XPicker/releases/latest).
+Get it from the [Releases Page](https://github.com/QuintixLabs/XPicker/releases/latest) for Windows, macOS or Linux. You can also use a package manager:
+
+| Platform | Command |
+|----------|---------|
+| Windows | `winget install QuintixLabs.XPicker` |
 
 ### 2. Set it up
 Run it, and the welcome screen lets you pick your hotkeys before you start.
